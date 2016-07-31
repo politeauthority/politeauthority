@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+"""
+    kill
+
+"""
+
+import sys
+import subprocess
+
+
+def find_processes(process_name=None, process_id=None):
+    if process_name:
+        search_qry = process_name
+    else:
+        search_qry = process_id
+    if process_name:
+        cmd = "sudo ps aux | grep %s" % search_qry
+    else:
+        cmd = "sudo ps aux"
+    process_list = subprocess.check_output(
+        cmd,
+        shell=True).split('\n')
+    refined = {}
+    for p in process_list:
+        if ('grep %s' % search_qry not in p) and ('kkill' not in p):
+            words = p.split(' ')
+            if len(words) < 2:
+                continue
+            print words
+            found_process_id = words[1]
+            if process_id and found_process_id != process_id:
+                continue
+            words_refined = []
+            for w in words:
+                if w != '':
+                    words_refined.append(w)
+            words = words_refined
+            found_process_name = ''
+            for w in words[10:]:
+                found_process_name += '%s ' % w
+            p_dict = {
+                'user': words[0],
+                'process_id': words[1],
+                'process_name': found_process_name.strip(),
+            }
+            words_refind = []
+            for w in words:
+                if w not in '':
+                    words_refind.append(w)
+            refined[p_dict['process_id']] = p_dict
+    return refined
+
+def kill_process(process_id, force=False):
+    if force:
+        force = '-9 '
+    else:
+        force = ''
+    cmd = 'sudo kill %s%s' % (force, process_id)
+    kill = subprocess.check_output(
+        cmd,
+        shell=True)
+
+if __name__ == '__main__':
+    process_name = sys.argv[1]
+    ps = find_processes(process_name)
+    if len(ps) == 0:
+        print "[ERROR] Couldn't find any processes by that name"
+        sys.exit()
+    print 'Found %s Processes matching %s' % (len(ps), process_name)
+    processes_to_kill = []
+    for process, info in ps.iteritems():
+        line = raw_input('Kill %s?: ' % info['process_name'])
+        if line.lower() in ['y', 'yes']:
+            processes_to_kill.append(info['process_id'])
+
+    for p in processes_to_kill:
+        kill_process(p)
+        print find_processes(process_id=p)
+
+    
