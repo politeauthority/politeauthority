@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+"""
+    kill
+"""
+import sys
+import subprocess
+
+
+def find_processes(process_name=None):
+    if process_name:
+        cmd = "sudo ps aux | grep %s" % process_name
+    else:
+        cmd = "sudo ps aux"
+    process_list = subprocess.check_output(
+        cmd,
+        shell=True).split('\n')
+    refined = {}
+    for p in process_list:
+        if 'ps aux | grep %s' % process_name not in p:
+            words = p.split(' ')
+            words_refined = []
+            for w in words:
+                if w != '':
+                    words_refined.append(w)
+            words = words_refined
+            if len(words) == 0:
+                continue
+            found_process_name = ''
+            for w in words[10:]:
+                found_process_name += '%s ' % w
+            p_dict = {
+                'user': words[0],
+                'processes_id': words[1],
+            }
+            words_refind = []
+            for w in words:
+                if w not in '':
+                    words_refind.append(w)
+            refined[found_process_name] = p_dict
+    return refined
+
+if __name__ == '__main__':
+    process_name = sys.argv[1]
+    ps = find_processes(process_name)
+    if len(ps) == 0:
+        print "[ERROR] Couldn't find any processes by that name"
+    print ps
+    print 'Found %s Processes matching %s' % (len(ps), process_name)
+    if len(ps) > 1:
+        for process, info in ps.iteritems():
+            print process
+            # line = raw_input('Kill %s?: ' % process)
+    # print ps
