@@ -19,12 +19,12 @@ class DriverMysql(object):
         return self.ex(query, getdict)
 
     def ex(self, query, getdict=False):
-        print '%s:%s@%s:%s' % (
-            self.user,
-            self.password,
-            self.host,
-            self.port
-        )
+        # print '%s:%s@%s:%s' % (
+        #     self.user,
+        #     self.password,
+        #     self.host,
+        #     self.port
+        # )
         conn = mdb.connect(
             host=self.host,
             user=self.user,
@@ -43,7 +43,6 @@ class DriverMysql(object):
                     result.append(tmp)
         else:
             result = cur.fetchall()
-
         conn.commit()
         conn.close()
         return result

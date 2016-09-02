@@ -19,9 +19,10 @@ class Scan(object):
         cmd = 'nmap -sP -oX %s %s' % (
             self.output_file,
             ip_range)
-        subprocess.pOpen(
+        subprocess.check_output(
             cmd,
             shell=True)
+        return self.output_file
 
     def __save_dir(self):
         the_dir = os.path.join(
