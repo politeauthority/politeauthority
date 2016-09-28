@@ -74,11 +74,12 @@ def __format_phone(data):
 
 
 if __name__ == "__main__":
-    phile = 'data/Registered_Voters_List_Part1.txt'
+    phile = 'data/Registered_Voters_List_Part9.txt'
     reader = csv.DictReader(open(phile), skipinitialspace=True)
 
     c = 0
     for r in reader:
+        print "%s %s" % (r['FIRST_NAME'], r['LAST_NAME'])
         sql = format_insert(r)
         db.ex(sql)
         print ''
