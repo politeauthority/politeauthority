@@ -53,25 +53,3 @@ CREATE TABLE `people` (
 	`id_required`VARCHAR(200) DEFAULT NULL,
 	PRIMARY KEY ( id )
 );
-
-INSERT INTO `voters`.`people`
-        (`voter_id`, `county_code`, `county`, `last_name`, `first_name`, `middle_name`, `name_suffix`,
-        `voter_name`, `status_code`, `precinct_name`, `address_library_id`, `house_num`, `house_suffix`,
-        `pre_dir`, `street_name`, `street_type`, `post_dir`, `unit_type`, `unit_num`, `adds_non_std`
-        `residential_address`, `residential_city`, `residential_state`, `residential_zip_code`,
-        `residential_zip_plus`, `effective_date`, `registration_date`, `status`, `status_reason`,
-        `birth_year`, `gender`, `precinct`, `split`, `voter_status_id`, `party`, `party_affiliation_date`,
-        `phone_num`, `mail_addr1`, `mail_addr2`, `mail_addr3`, `mailing_city`, `mailing_state`,
-        `mailing_zip_code`, `mailing_zip_plus`, `mailing_country`, `spl_id`, `permanent_mail_in_voter`,
-        `congressional`, `state_senate`, `state_house`, `id_required`)
-        VALUES ("544769", "47", "Park", "IVERSON", "JOANN",
-        "ELAINE", "", "IVERSON, JOANN ELAINE", "A", "2026047010",
-        "4952", "44", "", "", "BANDIT",
-        "LN", "", "", "", "",
-        "44BANDIT LN", "BAILEY", "CO", "80421",
-        "1344", "1988-10-14 00:00:00", "1988-10-14 00:00:00", "Active", "",
-        "1931", "Female", "2026047010", "010.084", "1", "DEM",
-        "1988-10-14 00:00:00", "3038386778", "44 BANDIT LN", "", "",
-        "BAILEY", "CO", "80421", "1344", "UNITED STATES OF AMERICA",
-        "684", "No", "Congressional 2", "State Senate 2", "State House 60", 
-        "N");

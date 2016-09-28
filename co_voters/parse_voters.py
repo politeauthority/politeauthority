@@ -4,6 +4,11 @@
 import csv
 from datetime import datetime
 from politeauthority import driver_mysql
+from modules.config import config
+
+
+db = driver_mysql.DriverMysql(config)
+print db
 
 
 def loc_address(row):
@@ -59,6 +64,7 @@ def __format_date(date_string):
     date_object = datetime.strptime(date_string, '%m/%d/%Y')
     return date_object
 
+
 def __format_phone(data):
     data = str(data)
     data = data.replace('(', '')
@@ -71,25 +77,10 @@ def __format_phone(data):
 if __name__ == "__main__":
     phile = 'data/Registered_Voters_List_Part1.txt'
     reader = csv.DictReader(open(phile), skipinitialspace=True)
-    c = 0
-    thing = []
-    thing_l = 0
 
-    x = 'phone_num'.upper()
+    c = 0
     for r in reader:
-        if r[x] not in thing:
-            thing.append(r[x])
-        if len(r[x]) > thing_l:
-            thing_1 = len(r[x])
-        print "%s %s" % (r['FIRST_NAME'], r['LAST_NAME'])
-        print r[x]
         print format_insert(r)
-        # print r['VOTER_ID']
-        # print loc_address(r)
-        # print 2016 - int(r['BIRTH_YEAR'])
-        # print ''
-        # if c % 500:
-            # print 'its odd'
         print ''
         c += 1
     # print thing
