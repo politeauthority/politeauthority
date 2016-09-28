@@ -54,10 +54,9 @@ def format_insert(person):
         "%(birth_year)s", "%(gender)s", "%(precinct)s", "%(split)s", "%(voter_status_id)s", "%(party)s",
         "%(party_affiliation_date)s", "%(phone_num)s", "%(mail_addr1)s", "%(mail_addr2)s", "%(mail_addr3)s",
         "%(mailing_city)s", "%(mailing_state)s", "%(mailing_zip_code)s", "%(mailing_zip_plus)s", "%(mailing_country)s",
-        "%(spl_id)s", "%(permanent_mail_in_voter)s", "%(congressional)s", "%(state_senate)s", "%(state_house)s", 
+        "%(spl_id)s", "%(permanent_mail_in_voter)s", "%(congressional)s", "%(state_senate)s", "%(state_house)s",
         "%(id_required)s");""" % d
-    print sql
-    return d
+    return sql
 
 
 def __format_date(date_string):
@@ -80,7 +79,8 @@ if __name__ == "__main__":
 
     c = 0
     for r in reader:
-        print format_insert(r)
+        sql = format_insert(r)
+        db.ex(sql)
         print ''
         c += 1
     # print thing
