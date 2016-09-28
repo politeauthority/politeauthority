@@ -36,7 +36,7 @@ CREATE TABLE `people` (
 	`voter_status_id` INT(10) DEFAULT NULL,
 	`party` VARCHAR(10) DEFAULT NULL,
 	`party_affiliation_date` DATETIME DEFAULT NULL,
-	`phone_num` VARCHAR(15) DEFAULT NULL,
+	`phone_num` TEXT DEFAULT NULL,
 	`mail_addr1` VARCHAR(255) DEFAULT NULL,
 	`mail_addr2` VARCHAR(255) DEFAULT NULL,
 	`mail_addr3` VARCHAR(255) DEFAULT NULL,

@@ -74,7 +74,7 @@ def __format_phone(data):
 
 
 if __name__ == "__main__":
-    phile = 'data/Registered_Voters_List_Part9.txt'
+    phile = sys.argv(1)
     reader = csv.DictReader(open(phile), skipinitialspace=True)
 
     c = 0
