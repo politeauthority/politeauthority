@@ -20,6 +20,14 @@ class PA_Backup(object):
         self.bkup_source = self.config['backup_source']
         self.bkup_source_file = self.bkup_source.split('/')[-1]
 
+    def pre_backup_cmds(self):
+        if not self.config['pre_backup_commands']:
+            return
+        for cmd in self.config['pre_backup_commands']:
+            print cmd
+            cmd_output = subprocess.check_output(cmd)
+            print cmd_output
+
     def set_backup_name(self):
         if not os.path.exists(self.bkup_dir):
             print '[ERROR] backup directory %s does not exist' % self.bkup_dir
@@ -80,11 +88,10 @@ class PA_Backup(object):
             self.bkup_file = self.bkup_file + '.zip'
 
     def run(self):
-        # self.verify_options()
+        self.pre_backup_cmds()
         self.set_backup_name()
         self.create_backup()
         self.compress_backup()
-        # print self.config.
 
 
 def parse_config(args):

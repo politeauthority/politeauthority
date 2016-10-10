@@ -1,7 +1,10 @@
 {
-"backup_source" : "/home/alix/archive",
-"backup_destination": "/home/alix/backup/pa/",
-"pre_backup_commands": ["mysql", "asas"],
-"compress": "True",
-"zip_pass": "demo"
+	"backup_source" : "/home/alix/archive",
+	"backup_destination": "/home/alix/backup/pa/",
+	"pre_backup_commands": [
+		"mysqldump -uroot -pdemo > /home/alix/archive/mysql_backup.sql",
+		"cp /var/log/apache.log /home/alix/archive/apache.log"
+	],
+	"compress": "True",
+	"zip_pass": "demo"
 }
