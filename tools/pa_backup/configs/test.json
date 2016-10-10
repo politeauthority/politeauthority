@@ -1,4 +1,7 @@
 {
 "backup_source" : "/home/alix/archive",
-"backup_destination": "/home/alix/backup/pa/"
+"backup_destination": "/home/alix/backup/pa/",
+"pre_backup_commands": ["mysql", "asas"],
+"compress": "True",
+"zip_pass": "demo"
 }
