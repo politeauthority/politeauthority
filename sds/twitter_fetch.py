@@ -3,15 +3,12 @@ from datetime import datetime
 import twitter
 import pprint
 import sys
-
-db_host = 'chatsec.org'
-db_user = 'devel'
-db_pass = '78VWc_bKTAap'
+from config import config
 
 mconf = {
-    'host': db_host,
-    'user': db_user,
-    'pass': db_pass
+    'host': config['db_host'],
+    'user': config['db_user'],
+    'pass': config['db_pass']
 }
 mdb = DriverMysql(mconf)
 
@@ -52,7 +49,7 @@ tw = twitter.Twitter(auth=twitter.OAuth(
 results = tw.statuses.user_timeline(
     screen_name='realDonaldTrump',
     max_id=sys.argv[1],
-    count=100)
+    count=200)
 pp = pprint.PrettyPrinter(indent=4)
 
 for status in results:

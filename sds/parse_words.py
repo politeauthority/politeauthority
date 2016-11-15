@@ -1,20 +1,19 @@
 from politeauthority.driver_mysql import DriverMysql
-import nltk
-from datetime import datetime
-
-import twitter
+# import nltk
+# from datetime import datetime
+from config import config
 import pprint
-
-db_host = 'chatsec.org'
-db_user = 'devel'
-db_pass = '78VWc_bKTAap'
+import operator
 
 mconf = {
-    'host': db_host,
-    'user': db_user,
-    'pass': db_pass
+    'host': config['db_host'],
+    'user': config['db_user'],
+    'pass': config['db_pass']
 }
+
 mdb = DriverMysql(mconf)
+ignore_words = ['a', 'i', 'the']
+remove_chars = ['!', '.', ',', ':']
 
 sql = 'select * from `sds`.`raw_text`;'
 tweets = mdb.ex(sql)
@@ -23,13 +22,20 @@ for t in tweets:
 
     text = t[3]
     stext = text.split(' ')
-    tokens = nltk.word_tokenize(text)
-    # for w in stext:
-    #     if w not in words:
-    #         words[w] = 1
-    #     else:
-    #         words[w] = words[w] + 1
-
-for w, c in words.iteritems():
-    if c > 10:
-        print '%s: %s' % (c, w)
+    # tokens = nltk.word_tokenize(text)
+    for w in stext:
+        w = w.strip()
+        for remove in remove_chars:
+            w = w.replace(remove, '')
+        if len(w) < 4:
+            continue
+        if w not in words:
+            words[w] = 1
+        else:
+            words[w] = words[w] + 1
+words = sorted(words.items(), key=operator.itemgetter(1))
+print words
+for w in words:
+    print w
+    # if c > 10:
+        # print '%s: %s' % (c, w)
