@@ -1,6 +1,14 @@
 #!/usr/bin/python
-# Mysql DB Driver
-# This driver simplifies some of the MySQL interactions
+"""
+ Mysql DB Driver
+ This driver simplifies some of the MySQL interactions
+ example usage
+    from politeauthority,driver_mysql import DriverMysql
+    db = DriverMysql(conf)
+    db.ex('select * from `some_db`.`some_table`;')
+    db.ex('inert into `some_db`.`some_table` (`thing`, `otherthing`) VALUES ('yeah', nah);')
+    db.conn.close()
+"""
 
 import MySQLdb as mdb
 
@@ -14,37 +22,23 @@ class DriverMysql(object):
             self.password = database['pass']
             self.port = int(database.get('port', 3306))
             self.dbname = database.get('name', '')
+        self.create_conn()
 
-    def execute(self, query, getdict=False):
-        return self.ex(query, getdict)
-
-    def ex(self, query, getdict=False):
-        # print '%s:%s@%s:%s' % (
-        #     self.user,
-        #     self.password,
-        #     self.host,
-        #     self.port
-        # )
-        conn = mdb.connect(
+    def create_conn(self):
+        self.conn = mdb.connect(
             host=self.host,
             user=self.user,
             passwd=self.password,
             port=self.port
         )
-        cur = conn.cursor()
-        cur.execute(query)
-        if getdict:
-            columns = cur.description
-            result = []
-            for value in cur.fetchall():
-                tmp = {}
-                for (index, column) in enumerate(value):
-                    tmp[columns[index][0]] = column
-                    result.append(tmp)
-        else:
-            result = cur.fetchall()
-        conn.commit()
-        conn.close()
+
+    def execute(self, query, getdict=False):
+        return self.ex(query, getdict)
+
+    def ex(self, query, **kwargs):
+        cur = self.conn.cursor()
+        cur.execute(query, **kwargs)
+        result = cur.fetchall()
         return result
 
     # insert
