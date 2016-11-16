@@ -87,11 +87,28 @@ class PA_Backup(object):
             shutil.rmtree(self.bkup_file)
             self.bkup_file = self.bkup_file + '.zip'
 
+    def spawn_backup(self):
+        if self.args.verbosity:
+            print 'Spawning'
+            for name, spawn in self.config['spawns'].iteritems():
+                if spawn['method'] != 'ssh':
+                    print '[ERROR] Spawn method %s not available' % spawn['method']
+                    continue
+                cmd = "scp %(local_path)s -i%(key)s %(user)s@%(host)s:%(remote_path)s " % {
+                    'user': spawn['user'],
+                    'host': spawn['host'],
+                    'remote_path': spawn['backup_path'],
+                    'local_path': self.bkup_file,
+                    'key': spawn['key']
+                }
+                print cmd
+
     def run(self):
         self.pre_backup_cmds()
         self.set_backup_name()
         self.create_backup()
         self.compress_backup()
+        self.spawn_backup()
 
 
 def parse_config(args):
