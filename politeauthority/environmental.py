@@ -18,4 +18,10 @@ def get_temp_dir():
         'PA_BASE_LOGGING_DIR',
         '/tmp/politeauthority')
 
+
+def get_machine_id():
+    return os.environ.get(
+        'PA_MACHINE_ID',
+        'UNKNOWN')
+
 # End File: politeauthority/politeauthority/environmental.py
