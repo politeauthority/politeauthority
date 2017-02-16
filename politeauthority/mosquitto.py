@@ -4,6 +4,7 @@
 """
 
 import paho.mqtt.publish as mpublish
+from datetime import datetime
 import ast
 
 from politeauthority import environmental
@@ -25,7 +26,8 @@ class Mosquitto(object):
             }
         elif not payload:
             payload = {}
-        payload['machine_id'] = environmental.get_machine_id()
+        # payload['machine_id'] = environmental.get_machine_id()
+        # payload['date_recorded'] = datetime.now()
         payload = str(payload)
         mpublish.single(
             topic,
@@ -36,15 +38,14 @@ class Mosquitto(object):
         payload_dict = ast.literal_eval(payload_string)
         return payload_dict
 
-    def find_machine_id(self, payload_string):
-        unpacked_payload = self.parse_str_payload(payload_string)
-        if unpacked_payload:
-            machine_id = unpacked_payload['data']['machine_id']
+    def find_machine_id(self, topic):
+        if '/' in topic:
+            last_segment = topic[topic.rfind('/')]
+            return last_segment
         else:
-            machine_id = None
-        return machine_id
+            return None
 
-    def consume_publish(self, topic, payload):
+    def consume_message(self, topic, payload):
         machine_id = self.find_machine_id(payload)
         if machine_id:
             machine_id = '"%s"' % machine_id
@@ -60,7 +61,6 @@ class Mosquitto(object):
             'message': payload
         }
         combined = qry % vals
-        print combined
         return combined
 
-# EndFile: politeauthority/scan.py
+# EndFile: politeauthority/mosquitto.py
