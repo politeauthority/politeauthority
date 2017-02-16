@@ -29,4 +29,17 @@ class Mosquitto(object):
             payload,
             hostname=self.host)
 
+    def consume_publish(self, topic, payload):
+        qry = """INSERT INTO `collectums`.`mqtt_raw` 
+            (machine_id, topic, message ,processed ,ready_to_delete) VALUES
+            (%(machine_id)s, %(topic)s, %(message)s, 0, 1 );"""
+        vals = {
+            'machine_id': self.find_machine_id(),
+            'topic': topic,
+            'payload': payload
+        }
+        combined = qry % vals
+        print combined
+        return
+
 # EndFile: politeauthority/scan.py
