@@ -4,14 +4,18 @@
 """
 
 import paho.mqtt.publish as mpublish
+import ast
 
 from politeauthority import environmental
 
 
 class Mosquitto(object):
 
-    def __init__(self, config):
-        self.host = config['host']
+    def __init__(self, config=None):
+        if not config:
+            self.host = None
+        else:
+            self.host = config['host']
 
     def publish(self, topic, payload):
         if isinstance(payload, basestring):
@@ -19,7 +23,6 @@ class Mosquitto(object):
             payload = {
                 'data': og_payload,
             }
-            print 'its a string'
         elif not payload:
             payload = {}
         payload['machine_id'] = environmental.get_machine_id()
@@ -29,8 +32,15 @@ class Mosquitto(object):
             payload,
             hostname=self.host)
 
+    def parse_str_payload(payload_string):
+        payload_dict = ast.literal_eval(payload_string)
+
+    def __get_machine_id(payload_string):
+        machine_id = self.parse_str_payload(payload_string)['machine_id']
+        return machine_id
+
     def consume_publish(self, topic, payload):
-        qry = """INSERT INTO `collectums`.`mqtt_raw` 
+        qry = """INSERT INTO `collectums`.`mqtt_raw`
             (machine_id, topic, message ,processed ,ready_to_delete) VALUES
             (%(machine_id)s, %(topic)s, %(message)s, 0, 1 );"""
         vals = {
