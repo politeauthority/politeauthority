@@ -12,13 +12,11 @@ mconf = {
 
 mdb = DriverMysql(mconf)
 
+
 class Consume(object):
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code "+str(rc))
-
-        # Subscribing in on_connect() means that if we lose the connection and
-        # reconnect then subscriptions will be renewed.
         client.subscribe("#")
 
     def on_message(self, client, userdata, msg):
@@ -27,7 +25,7 @@ class Consume(object):
         print msg
         qry = Mosquitto(config={}).consume_publish(msg.topic, msg.payload)
         mdb.ex(qry)
-        
+
 
 if __name__ == "__main__":
     consumer = Consume()

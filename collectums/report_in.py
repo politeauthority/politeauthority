@@ -1,7 +1,7 @@
-from politeauthority.mosquitto import Mosquitto
 import ipgetter
 
-print Mosquitto
+from politeauthority.mosquitto import Mosquitto
+
 
 config = {}
 config['host'] = 'chatsec.org'

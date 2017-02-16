@@ -34,6 +34,7 @@ class Mosquitto(object):
 
     def parse_str_payload(self, payload_string):
         payload_dict = ast.literal_eval(payload_string)
+        return payload_dict
 
     def find_machine_id(self, payload_string):
         unpacked_payload = self.parse_str_payload(payload_string)

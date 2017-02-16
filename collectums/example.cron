@@ -1,0 +1,1 @@
+0/30 * * * * export PA_MACHINE_ID="ME-WORK"; python /home/alix/Mega/Repos/politeauthority/collectums/report_in.py
