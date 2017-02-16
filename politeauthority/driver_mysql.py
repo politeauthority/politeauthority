@@ -35,10 +35,13 @@ class DriverMysql(object):
     def execute(self, query, getdict=False):
         return self.ex(query, getdict)
 
-    def ex(self, query, **kwargs):
+    def ex(self, query, kwargs=False):
+        if not kwargs:
+            kwargs = {}
         cur = self.conn.cursor()
         cur.execute(query, **kwargs)
         result = cur.fetchall()
+        self.conn.commit()
         return result
 
     # insert
