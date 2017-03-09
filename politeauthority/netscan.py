@@ -64,7 +64,7 @@ class NetScan(object):
     def __parse_nmap_scan_time(self, string_):
         return datetime.strptime(string_, '%a %b  %d %H:%M:%S %Y')
 
-    def run_wilist(self, interface):
+    def run_iwlist(self, interface):
         output_file = self.cmd_iwlist(interface)
         parsed_iwlist = self.parse_iwlist(output_file)
         return parsed_iwlist
@@ -72,14 +72,13 @@ class NetScan(object):
     def cmd_iwlist(self, interface):
         output_file = os.path.join(
             self.__save_dir(),
-            'netscan',
             'iwlist_%s.txt' % str(datetime.now()).replace(' ', '-')
         )
         cmd = 'sudo iwlist %s scan > %s' % (interface, output_file)
         subprocess.check_output(
             cmd,
             shell=True)
-        print output_file
+        return output_file
 
     def parse_iwlist(self, phile_location):
         fo = open(phile_location, "r+")
@@ -113,7 +112,7 @@ class NetScan(object):
                     low = int(tmp[0:tmp.find('/')])
                     high = int(tmp[tmp.find('/')+1:tmp.find('Signal')].strip())
                     signal_strength = int(round(float(low)/high, 2) * 100)
-                    nodes[ap_mac]['signal_strengh'] = signal_strength
+                    nodes[ap_mac]['signal_strength'] = signal_strength
                     signal_level = self.__clean_values_at(l, 'Signal level=')
                     signal_level = int(signal_level[:signal_level.find('dBm')])
                     nodes[ap_mac]['signal_level'] = signal_level
