@@ -8,6 +8,7 @@ import subprocess
 from datetime import datetime
 import xmltodict
 from politeauthority import environmental
+from politeauthority import mathums
 
 
 class NetScan(object):
@@ -111,7 +112,7 @@ class NetScan(object):
                     tmp = self.__clean_values_at(l, 'Quality=')
                     low = int(tmp[0:tmp.find('/')])
                     high = int(tmp[tmp.find('/')+1:tmp.find('Signal')].strip())
-                    signal_strength = int(round(float(low)/high, 2) * 100)
+                    signal_strength = mathums.get_percentage(low, high)
                     nodes[ap_mac]['signal_strength'] = signal_strength
                     signal_level = self.__clean_values_at(l, 'Signal level=')
                     signal_level = int(signal_level[:signal_level.find('dBm')])
