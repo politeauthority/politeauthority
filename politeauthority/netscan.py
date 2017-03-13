@@ -16,10 +16,9 @@ class NetScan(object):
     def hosts(self, ip_range):
         self.output_file = os.path.join(
             self.__save_dir(),
-            'netscan',
             'nmap_%s.xml' % str(datetime.now()).replace(' ', '-')
         )
-        cmd = 'nmap -sP -oX %s %s' % (
+        cmd = 'nmap -sP -sL -oX %s %s' % (
             self.output_file,
             ip_range)
         subprocess.check_output(
