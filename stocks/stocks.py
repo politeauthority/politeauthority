@@ -2,6 +2,7 @@ from datetime import datetime
 from yahoo_finance import Share
 from portfolio import stocks
 
+
 def format_curreny(number):
     str_num = str(number)
     if len(str(str_num)[str(str_num).find('.')+1:]) < 2:
