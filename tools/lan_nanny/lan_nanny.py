@@ -9,14 +9,8 @@ from datetime import datetime
 from politeauthority.netscan import NetScan
 from politeauthority.driver_mysql import DriverMysql
 from politeauthority import environmental
+from politeauthority.raspi import Raspi
 
-database = {
-    'user': 'root',
-    'pass': 'cleancut',
-    'host': 'localhost',
-    'dbname': 'phinder'
-}
-print environmental.mysql_conf()
 db = DriverMysql(environmental.mysql_conf())
 
 
@@ -53,8 +47,9 @@ def save_new_device(device):
 
 
 def update_device(device):
-    qry = """UPDATE `phinder`.`devices` SET last_seen="%s", last_ip="%s"
-        WHERE `mac`="%s";""" % (device['scan_time'], device['current_ip'], device['mac'])
+    qry = """UPDATE `phinder`.`devices`
+             SET last_seen="%s", last_ip="%s", seen_by="%s"
+             WHERE `mac`="%s";""" % (device['scan_time'], device['current_ip'], 'friendly', device['mac'])
     db.ex(qry)
 
 
@@ -73,12 +68,13 @@ def parse_nmap(xml_phile):
     netscan = dict(xmltodict.parse(scan_string))
     network_devices = {}
     scan_time = parse_scan_time(netscan['nmaprun']['runstats']['finished']['@timestr'])
-    if 'host' not in netscan['nmaprun']:
-        return network_devices
     for host in netscan['nmaprun']['host']:
         if host['status']['@state'] == 'up':
-            ip = host['address'][0]['@addr']
-            mac = host['address'][1]['@addr']
+            try:
+                ip = host['address'][0]['@addr']
+                mac = host['address'][1]['@addr']
+            except KeyError:
+                continue
             network_devices[mac] = {
                 'name': '',
                 'mac': mac,
@@ -109,11 +105,19 @@ def store_data(network_devices):
         save_wittness(scanned_device_id, info['scan_time'])
 
 
+def prep_dynamic_scan():
+    current_ip = Raspi().get_local()[0]
+    lookup_range = current_ip[:current_ip.rfind('.')] + '.1-255'
+    return lookup_range
+
 if __name__ == '__main__':
     if os.geteuid() != 0:
         exit("""You need to have root privileges to run this script.\n
         Please try again, this time using 'sudo'. Exiting.""")
-    scans = sys.argv[1]
+    if len(sys.argv) > 1:
+        scans = sys.argv[1]
+    else:
+        scans = prep_dynamic_scan()
     if ',' in scans:
         scans = scans.split(',')
     else:
