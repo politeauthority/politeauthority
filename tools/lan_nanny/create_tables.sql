@@ -6,7 +6,7 @@ CREATE TABLE `phinder`.`devices` (
   `last_ip` varchar(15) DEFAULT NULL,
   `last_hostname` varchar(255) DEFAULT NULL,
   `people_id` int(10) DEFAULT NULL,
-  `seen_by` varchar(50) default null,
+  `seen_by` varchar(50) default NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `mac` (`mac`)
 ) ENGINE=InnoDB;
