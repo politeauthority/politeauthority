@@ -88,6 +88,7 @@ def store_data(network_devices):
     known_devices = get_devices()
     print 'Found %s Devices of %s known' % (len(network_devices), len(known_devices))
     for mac, info in network_devices.iteritems():
+        print 'Found %s' % mac
         scanned_device_id = False
         for d_id, device in known_devices.iteritems():
             if device['mac'] == mac:
