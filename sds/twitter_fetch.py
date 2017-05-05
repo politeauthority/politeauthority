@@ -48,7 +48,7 @@ tw = twitter.Twitter(auth=twitter.OAuth(
 
 results = tw.statuses.user_timeline(
     screen_name='realDonaldTrump',
-    max_id=sys.argv[1],
+    #max_id=sys.argv[1],
     count=200)
 pp = pprint.PrettyPrinter(indent=4)
 
