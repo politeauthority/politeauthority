@@ -1,21 +1,17 @@
 from politeauthority.driver_mysql import DriverMysql
+from politeauthority import environmental
 from datetime import datetime
 import twitter
 import pprint
 import sys
-from config import config
 
-mconf = {
-    'host': config['db_host'],
-    'user': config['db_user'],
-    'pass': config['db_pass']
-}
+mconf = environmental.mysql_conf()
 mdb = DriverMysql(mconf)
 
-consumer_key = "4lxB1IJYLBoH5MRn6889jvF7B"
-consumer_secret = "bsQLCHElUrhzC5Eoiy1K3ZQz3PJSTC0idxSxn6uAQGuIjIQyIe"
-access_key = "9213842-thUhVewPIyyMVtAsvo8P1MEYhA03IJ3dXdrCjq2zoN"
-access_secret = "n9lgTLB6Z4R8HrGt7iGDbOwZat2gP8D6EpPJu617gfxaf"
+consumer_key = environmental.twitter_consumer_key()
+consumer_secret = environmental.twitter_consumer_secret()
+access_key = environmental.twitter_access_key()
+access_secret = environmental.twitter_access_secret()
 
 
 def insert(source, created_at, text):
@@ -46,10 +42,17 @@ tw = twitter.Twitter(auth=twitter.OAuth(
     consumer_key,
     consumer_secret))
 
-results = tw.statuses.user_timeline(
-    screen_name='realDonaldTrump',
-    #max_id=sys.argv[1],
-    count=200)
+if len(sys.argv) > 1:
+    results = tw.statuses.user_timeline(
+        screen_name='realDonaldTrump',
+        max_id=sys.argv[1],
+        count=200)
+else:
+    results = tw.statuses.user_timeline(
+        screen_name='realDonaldTrump',
+        max_id=None,
+        count=200)
+
 pp = pprint.PrettyPrinter(indent=4)
 
 for status in results:
