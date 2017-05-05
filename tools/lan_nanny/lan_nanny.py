@@ -49,7 +49,7 @@ def save_new_device(device):
 def update_device(device):
     qry = """UPDATE `phinder`.`devices`
              SET last_seen="%s", last_ip="%s", seen_by="%s"
-             WHERE `mac`="%s";""" % (device['scan_time'], device['current_ip'], 'friendly', device['mac'])
+             WHERE `mac`="%s";""" % (device['scan_time'], device['current_ip'], environmental.get_machine_id(), device['mac'])
     db.ex(qry)
 
 
