@@ -3,7 +3,7 @@ import subprocess
 from politeauthority import environmental
 
 
-def send(color, msg):
+def send(msg):
     cmd = """curl -X POST -H 'Content-type: application/json' --data '{"text":"%s"}' """
     cmd += environmental.slack_url()
     cmd = cmd % msg
