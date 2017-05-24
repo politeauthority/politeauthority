@@ -64,4 +64,11 @@ def twitter_access_secret():
         'PA_TWITTER_ACCESS_SECRET',
         None)
 
+
+def slack_url():
+    return os.environ.get(
+        'PA_SLACK_URL',
+        'https://hooks.slack.com/services/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')
+
+
 # End File: politeauthority/politeauthority/environmental.py
