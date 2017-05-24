@@ -1,0 +1,18 @@
+#!/usr/bin/python
+"""
+    Git-Searchy
+    Desc
+    Usage - git search "hotfix"
+"""
+import sys
+import subprocess
+
+if __name__ == "__main__":
+    search = sys.argv[1]
+    print sys.argv
+    if not sys.argv or len(sys.argv) < 1 or sys.argv[1] == '':
+        print 'What are you looking for?'
+        exit()
+    subprocess.call('git log --all --grep="%s"' % search, shell=True)
+
+# End File: enteprise_data/bin/git-searchy
