@@ -50,7 +50,6 @@ if len(sys.argv) > 1:
 else:
     results = tw.statuses.user_timeline(
         screen_name='realDonaldTrump',
-        max_id=None,
         count=200)
 
 pp = pprint.PrettyPrinter(indent=4)
