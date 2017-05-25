@@ -1,17 +1,12 @@
 from politeauthority.driver_mysql import DriverMysql
+from politeauthority import environmental
 # import nltk
 # from datetime import datetime
-from config import config
+
 import pprint
 import operator
 
-mconf = {
-    'host': config['db_host'],
-    'user': config['db_user'],
-    'pass': config['db_pass']
-}
-
-mdb = DriverMysql(mconf)
+mdb = DriverMysql(environmental.mysql_conf())
 ignore_words = ['a', 'i', 'the']
 remove_chars = ['!', '.', ',', ':']
 
