@@ -3,7 +3,6 @@ from politeauthority import environmental
 # import nltk
 # from datetime import datetime
 
-import pprint
 import operator
 
 mdb = DriverMysql(environmental.mysql_conf())

@@ -22,6 +22,10 @@
 
 
 import string
+from politeauthority.driver_mysql import DriverMysql
+from politeauthority import environmental
+
+mdb = DriverMysql(environmental.mysql_conf())
 
 
 def translation_sets(term_type):
@@ -30,30 +34,45 @@ def translation_sets(term_type):
              JOIN `lang`.`term_relationshops` tr
                 ON t.`term_id` = tr.term_id
             JOIN `lang`.`translations` trans
-                ON trans.translation_id=tr.translation_id
+                ON trans.`translation_id`=tr.`translation_id`
              WHERE
                 t.term_type = "%s" ;""" % term_type
+    return mdb.execute(qry).fetchall()
+
+
+def store_term(term_name, term_type=None):
+    qry = """INSERT INTO `lang`.`terms` (`term`,`term_type`) VALUES ("%s", "%s";)"""
+    mdb.execute(qry)
 
 
 def hash_tags(_string):
-    return {tag.strip("#") for tag in _string.split() if tag.startswith("#")}
+    return __find_prepended(_string, '#')
 
 
 def at_mentions(_string):
+    return __find_prepended(_string, '@')
+
+
+def __find_prepended(_string, char):
+    words = __stringy(_string)
+    d = {}
+    for word in words:
+        if word.startswith(char):
+            key = char + word[len(word) + 1].translate(None, string.punctuation).lower()
+            if key not in d:
+                d[key] = 0
+            d[key] += 1
+    return d
+
+
+def __stringy(_string):
     if ' ' not in _string:
         words = [_string]
     else:
         words = _string.split()
     if '' in words:
         words.remove('')
-    d = {}
-    for word in _string:
-        if word.startswith("@"):
-            key = "@" + word.translate(None, string.punctuation).lower()
-            if key not in d:
-                d[key] = 0
-            d[key] += 1
-    return d
+    return words
 
 common_missspellings = {
     'absence': ['absense, absance'],
@@ -115,8 +134,8 @@ lingo_twitter = {
      "Email": ["EM", "EML"],
      "Email address": ["EMA"],
      "Face to face": ["F2F", "FTF"],
-     "Facebook, F--- buddy": ["FB"]
-     # "Follow Friday": FF =
+     "Facebook": ["FB"],
+     "Follow Friday": ["FF"],
      # "For Fucks‘s Sake": ["FFS"]
      # "F--- my life.": ["FML"]
      # "Find of the day": ["FOTD"]
