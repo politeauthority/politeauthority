@@ -2,6 +2,11 @@ import os
 import subprocess
 
 
+def file_safe_date(the_date):
+    ret = str(the_date).replace(':', '_').replace(' ', 'T')
+    return ret
+
+
 def get_percentage(partial, total, rounding=2):
     """
         @desc
@@ -13,7 +18,7 @@ def get_percentage(partial, total, rounding=2):
         @return
             float()
     """
-    return round(float(partial * 100)/total, rounding)
+    return round(float(partial * 100) / total, rounding)
 
 
 def uncompress_file(infile, outfile=None, password=None, remove_original=True):
