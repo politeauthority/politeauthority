@@ -6,8 +6,7 @@ from datetime import datetime
 photo_name = 'temp_'
 file_name = '/home/pi/photos/%s%s.jpg' % (
     photo_name,
-    str(datetime.now())[:19].replace(' ', 'T').replace(':', '_')
-    )
+    str(datetime.now())[:19].replace(' ', 'T').replace(':', '_'))
 cmd = ['raspistill',
        '-rot 270',
        '-o',
@@ -15,8 +14,8 @@ cmd = ['raspistill',
 
 print 'Taking picture'
 subprocess.check_output(
-        ' '.join(cmd),
-        shell=True)
+    ' '.join(cmd),
+    shell=True)
 picture_uploaded = None
 print 'Trying to send the picture'
 try:
