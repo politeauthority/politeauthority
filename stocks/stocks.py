@@ -51,27 +51,23 @@ def load_portfolio_from_csv():
         for row in spamreader:
             sym = row['Symbol']
             if row['Symbol'] not in stocks:
-                if not row['Sale Count']:
-                    row['Sale Count'] = 0
-                if not row['Sale Date']:
-                    row['Sale Date'] = None
-                else:
-                    row['Sale Date'] = datetime.strptime(row['Sale Date'], '%m-%d-%Y')
                 stocks[sym] = {}
                 stocks[sym]['symbol'] = row['Symbol']
                 stocks[sym]['purchases'] = []
                 stocks[sym]['sells'] = []
                 stocks[sym]['active_shares'] = 0
-            stocks[sym]['purchases'].append({
-                'price': float(row['Purchase Price']),
-                'count': int(row['Purchase Count']),
-                'date':  datetime.strptime(row['Purchase Date'], '%m-%d-%Y')
-                })
-            stocks[sym]['sells'].append({
-                'price': row['Sale Price'],
-                'count': row['Sale Count'],
-                'date':  row['Sale Date']
-                })
+            if row['Buy Sell'] == "buy":
+                stocks[sym]['purchases'].append({
+                    'price': float(row['Price']),
+                    'count': int(row['Count']),
+                    'date':  datetime.strptime(row['Date'], '%m-%d-%Y')
+                    })
+            elif row['Buy Sell'] == "sell":
+                stocks[sym]['sells'].append({
+                    'price': row['Price'],
+                    'count': row['Count'],
+                    'date':  row['Date']
+                    })
     for sym, stock in stocks.iteritems():
         for p in stock['purchases']:
             stocks[sym]['active_shares'] += p['count']
@@ -94,6 +90,7 @@ if __name__ == '__main__':
             share = Share(info['symbol'])
         except urllib2.HTTPError, e:
             print e
+            print "Couldn't Fetch Data for %s" % symbol
             continue
         current_price = float(share.get_price())
         price_delta = 0
@@ -117,8 +114,8 @@ if __name__ == '__main__':
         }
         stock_delta_percent = common.get_percentage(value_in_stock - cash_in_stock, value_in_stock)
         print '\tDays in\t %s' % days_in_stock
-        print '\tCash in Stock\t %s' % cash_in_stock
-        print '\tValue in Stock\t %s' % value_in_stock
+        print '\tCash in Stock\t %s' % format_curreny(cash_in_stock, False)
+        print '\tValue in Stock\t %s' % format_curreny(value_in_stock, False)
         print stock_delta_percent
         print ''
     if total_portfolio <= total_investment:
