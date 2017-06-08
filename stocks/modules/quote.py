@@ -1,15 +1,16 @@
 """
-    Company Model
+    Quote Model
 
- CREATE TABLE `quotes` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `company_id` bigint(20) DEFAULT NULL,
-  `day_high` decimal(20,2) DEFAULT NULL,
-  `day_low` decimal(20,2) DEFAULT NULL,
-  `current` decimal(20,2) DEFAULT NULL,
-  `date` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+    QUOTE TABLE
+    CREATE TABLE `quotes` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `company_id` bigint(20) DEFAULT NULL,
+        `day_high` decimal(20,4) DEFAULT NULL,
+        `day_low` decimal(20,4) DEFAULT NULL,
+        `current` decimal(20,4) DEFAULT NULL,
+        `date` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    );
 
 """
 from datetime import datetime
@@ -94,6 +95,5 @@ class Quote(object):
                 ins_f,
                 ins_v
             )
-            print qry
             db.ex(qry)
             return True

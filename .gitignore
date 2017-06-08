@@ -91,3 +91,6 @@ ENV/
 *.AppleDouble/
 *DS_Store
 *~
+
+#*.py#
+.#*#

@@ -1,6 +1,7 @@
 """
     Company Model
 
+    COMPANY TABLE
     CREATE TABLE `companies` (
       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
       `symbol` varchar(10) DEFAULT NULL,
@@ -16,21 +17,23 @@
       `low_52_weeks` decimal(20,2) DEFAULT NULL,
       `run_company` tinyint(1) DEFAULT NULL,
       PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB AUTO;
+    );
 
-  CREATE TABLE `stocks`.`meta` (
-   `meta_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-   `key` varchar(50) DEFAULT NULL,
-   `entity_type` varchar(10) DEFAULT NULL,
-   `entity_id` varchar(255) DEFAULT NULL,
-   `meta_type` decimal(12,2) DEFAULT NULL,
-   `val_decimal` decimal(20,2) DEFAULT NULL,
-   `val_int` decimal(20,2) DEFAULT NULL,
-   `val_varchar` varchar(10) DEFAULT NULL,
-   `val_text` varchar(255) DEFAULT NULL,
-   `last_update_ts` datetime default null,
-   PRIMARY KEY (`meta_id`)
- );
+
+    META TABLE
+    CREATE TABLE `stocks`.`meta` (
+     `meta_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+     `key` varchar(50) DEFAULT NULL,
+     `entity_type` varchar(10) DEFAULT NULL,
+     `entity_id` varchar(255) DEFAULT NULL,
+     `meta_type` decimal(12,2) DEFAULT NULL,
+     `val_decimal` decimal(20,2) DEFAULT NULL,
+     `val_int` decimal(20,2) DEFAULT NULL,
+     `val_varchar` varchar(10) DEFAULT NULL,
+     `val_text` varchar(255) DEFAULT NULL,
+     `last_update_ts` datetime default null,
+     PRIMARY KEY (`meta_id`)
+   );
 
 """
 from datetime import datetime
