@@ -25,7 +25,7 @@ from datetime import datetime
 from datetime import timedelta
 import csv
 from yahoo_finance import Share
-
+from google import google
 
 from politeauthority import common
 from politeauthority import environmental
@@ -33,6 +33,7 @@ from politeauthority.driver_mysql import DriverMysql
 
 from modules.company import Company
 from modules.quote import Quote
+from modules import company_collections
 
 INTERSTING_SYMBOLS = ['YHOO', 'VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
                       'MULE']
@@ -116,7 +117,7 @@ def update_data_from_yahoo(only_interesting=False):
     if only_interesting:
         where_qry = '`symbol` IN ("%s")' % '","'.join(INTERSTING_SYMBOLS)
     else:
-        where_qry = """`run_company` = 1 /* AND `last_update_ts` <= "%s" */ AND high_52_weeks is null  """ % (datetime.now() - timedelta(hours=20))
+        where_qry = """`run_company` = 1 AND `last_update_ts` <= "%s"  """ % (datetime.now() - timedelta(hours=20))
     qry = """SELECT `id`
              FROM `stocks`.`companies`
              WHERE
@@ -168,8 +169,65 @@ def update_data_from_yahoo(only_interesting=False):
         print ''
 
 
+def get_company_wikipedia_url():
+    companies = company_collections.get_companies_by_meta('wikipedia_url', 1, False)
+    # companies = db.ex(qry)
+
+    for c in companies:
+        g_search = "%s wikipedia" % c.name
+        if 'wikipedia_url_fail' in c.meta:
+            print c.meta
+            print 'found a already failed'
+            exit()
+        print g_search
+        print c.name
+        search_results = google.search(g_search)
+        wiki_url = None
+        if len(search_results) > 0:
+            for s in search_results:
+                if 'en.wikipedia.org' in s.link:
+                    wiki_url = s.link
+                    continue
+
+        if wiki_url:
+            meta = {
+                'key': 'wikipedia_url',
+                'entity_id': c.id,
+                'type': 'varchar',
+                'value': wiki_url
+            }
+            print wiki_url
+            c.save_meta(meta)
+        else:
+            meta = {
+                'key': 'wikipedia_url_fail',
+                'entity_id': c.id,
+                'type': 'int',
+                'value': 1
+            }
+        print ''
+
+
+def show_company_wikipedia_url():
+    companies = company_collections.get_companies_by_meta('wikipedia_url', 3)
+    # companies = db.ex(qry)
+    if len(companies) == 0:
+        print 'No companies found with wikipedia_url'
+    for c in companies:
+        print c.id
+        print c.name
+        c.load_meta()
+        # print c.meta
+        if 'wikipedia_url' in c.meta:
+            print c.meta['wikipedia_url']['value']
+
+    # print all_companies
+
 if __name__ == '__main__':
     args = docopt(__doc__)
+    get_company_wikipedia_url()
+    # show_company_wikipedia_url()
+    exit()
     if args['--build_from_nasdaq']:
         philes = download_nasdaq_public_data()
         process_nasdaq_public_data(philes)

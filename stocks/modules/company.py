@@ -20,26 +20,13 @@
     );
 
 
-    META TABLE
-    CREATE TABLE `stocks`.`meta` (
-     `meta_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-     `key` varchar(50) DEFAULT NULL,
-     `entity_type` varchar(10) DEFAULT NULL,
-     `entity_id` varchar(255) DEFAULT NULL,
-     `meta_type` decimal(12,2) DEFAULT NULL,
-     `val_decimal` decimal(20,2) DEFAULT NULL,
-     `val_int` decimal(20,2) DEFAULT NULL,
-     `val_varchar` varchar(10) DEFAULT NULL,
-     `val_text` varchar(255) DEFAULT NULL,
-     `last_update_ts` datetime default null,
-     PRIMARY KEY (`meta_id`)
-   );
-
 """
 from datetime import datetime
 
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
+
+from meta import Meta
 
 db = DriverMysql(environmental.mysql_conf())
 
@@ -72,9 +59,10 @@ class Company(object):
         if len(company_row) <= 0:
             return None
         self.build_from_row(company_row[0])
+        self.load_meta()
 
     def build_from_row(self, company_row):
-        self.id = self.id
+        self.id = company_row[0]
         self.symbol = company_row[1]
         self.name = company_row[2]
         self.last_sale = company_row[3]
@@ -117,7 +105,6 @@ class Company(object):
             set_sql += """`%s`='%s', """ % ("run_company", self.run_company)
 
         if not set_sql:
-            print 'Nothing to edit'
             return False
         if set_sql:
             set_sql += '`last_update_ts`="%s", ' % datetime.now()
@@ -135,26 +122,16 @@ class Company(object):
         return True
 
     def load_meta(self):
-        """
-            @todo: key the fucking meta table properly, and finish this method
-        """
-        qry = """SELECT * FROM `stocks`.`meta`
-                 WHERE entity_type="company" AND `company_id`="%s"; """ % (
-            self.id
-        )
-        meta = db.ex(qry)
-        self.company_meta = {}
-        #
-        for m in meta:
-            self.company_meta[m] = {
-                'meta_id': m[0],
-                'key': m[1],
-                'meta_type': m[2],
-                'meta_id4': m[4],
-                'meta_id5': m[5],
-                'meta_id6': m[6],
-                'meta_id7': m[7],
-                'meta_id8': m[8],
-                'meta_id9': m[9],
-            }
+        m = Meta()
+        m.schema = 'stocks'
+        info = {}
+        info['entity_id'] = self.id
+        info['entity_type'] = 'company'
+        self.meta = m.load_meta(info)
 
+    def save_meta(self, meta_info):
+        m = Meta()
+        m.schema = 'stocks'
+        meta_info['entity_id'] = self.id
+        meta_info['entity_type'] = 'company'
+        m.save(meta_info)

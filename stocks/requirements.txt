@@ -1,2 +1,3 @@
 Flask
 yahoo_finance
+Google-Search-API
