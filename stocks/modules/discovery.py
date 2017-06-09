@@ -31,9 +31,14 @@ def emerging_tech_stocks():
     qry = """SELECT `id`
              FROM `stocks`.`companies`
              WHERE
-                sector="Technology"
-                AND
                 ipo_year="2017"
+                AND
+                    (
+                    `high_52_weeks` IS NOT NULL
+                    AND
+                    `low_52_weeks` IS NOT NULL
+                    )
+
             ORDER BY last_sale;
         """
     print qry

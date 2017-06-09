@@ -8,7 +8,7 @@ SELECT count(*)
 SELECT symbol, name, sector, industry, ipo_year, last_sale, high_52_weeks, low_52_weeks 
     FROM `stocks`.`companies`
     WHERE 
-        sector="Technology" 
+        sector "Technology" 
         AND 
         ipo_year IN ("2017", "2016") 
     ORDER BY last_sale;
@@ -19,3 +19,19 @@ SELECT DISTINCT (`sector`), count(*)
     WHERE `ipo_year` IN ("2017", "2016") 
     GROUP BY 1
     ORDER BY 2;
+
+
+SELECT c.name, m.meta_type, m.key, m.val_varchar 
+    FROM stocks.companies c
+    JOIN stocks.meta m
+    ON c.id=m.entity_id AND m.entity_type='company';
+
+
+SELECT c.name, c.sector, m.meta_type, m.key, m.val_varchar 
+    FROM stocks.companies c
+        JOIN stocks.meta m
+            ON c.id=m.entity_id AND m.entity_type='company'
+    WHERE
+        m.key = 'wikipedia_url';
+
+select * from stocks.meta;

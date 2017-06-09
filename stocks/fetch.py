@@ -25,7 +25,8 @@ from datetime import datetime
 from datetime import timedelta
 import csv
 from yahoo_finance import Share
-from google import google
+# from google import google
+import wikipedia
 
 from politeauthority import common
 from politeauthority import environmental
@@ -170,46 +171,90 @@ def update_data_from_yahoo(only_interesting=False):
 
 
 def get_company_wikipedia_url():
-    companies = company_collections.get_companies_by_meta('wikipedia_url', 1, False)
+    companies = company_collections.get_companies_for_wiki_seach(10)
     # companies = db.ex(qry)
 
     for c in companies:
-        g_search = "%s wikipedia" % c.name
+        # g_search = "%s wikipedia" % c.name
         if 'wikipedia_url_fail' in c.meta:
             print c.meta
             print 'found a already failed'
-            exit()
-        print g_search
-        print c.name
-        search_results = google.search(g_search)
-        wiki_url = None
-        if len(search_results) > 0:
-            for s in search_results:
-                if 'en.wikipedia.org' in s.link:
-                    wiki_url = s.link
-                    continue
+            c.save()
+            continue
 
-        if wiki_url:
-            meta = {
+        print c.name
+        c.save()
+        query_term = c.name
+        query_term = query_term.replace('Inc.', '')
+        query_term = common.remove_punctuation(query_term)
+        query_term = query_term.strip()
+        print query_term
+        try:
+            wiki = wikipedia.page(query_term)
+        except wikipedia.exceptions.PageError, e:
+            print 'Could not Find wiki artical for %s, Error: %s' % (c.name, e)
+            print ''
+            continue
+        wsd = {  # wiki seasrch data
+            'sim_title': common.similar(c.name, wiki.title),
+            'sim_url': common.similar(c.name, common.remove_punctuation(wiki.url[30:])),
+            'wiki_url': wiki.url,
+            'wiki_url_text': common.remove_punctuation(wiki.url[30:])
+        }
+        wsd['sim_total'] = wsd['sim_title'] + wsd['sim_url']
+        if wsd['sim_total'] >= 1:
+            print 'its good'
+            wsd['sim_accepted'] = True
+        else:
+            print 'not right'
+            wsd['sim_accepted'] = False
+
+        print "wiki title:   %s" % wiki.title
+        print "wiki url:     %s" % wiki.url
+        print "Wiki URL sim: %s" % wsd['wiki_url_text']
+        print "sim title:    %s" % wsd['sim_title']
+        print "sim url:      %s" % wsd['sim_url']
+        print 'sim total:    %s' % wsd['sim_total']
+
+        meta_wiki_search = {
+            'key': 'wiki_search',
+            'entity_id': c.id,
+            'type': 'pickle',
+            'value': wsd
+        }
+        c.save_meta(meta_wiki_search)
+        # print wiki.content
+        # search_results = google.search(g_search, 1)
+        # wiki_url = None
+        # if len(search_results) > 0:
+        #     for s in search_results:
+        #         print s.link
+        #         if 'en.wikipedia.org' in s.link:
+        #             wiki_url = s.link
+        #             continue
+
+        if wsd['sim_accepted']:
+            meta_wikipedia_url = {
                 'key': 'wikipedia_url',
                 'entity_id': c.id,
                 'type': 'varchar',
-                'value': wiki_url
+                'value': wiki.url
             }
-            print wiki_url
-            c.save_meta(meta)
+            print 'saving wikipedia_url'
+            c.save_meta(meta_wikipedia_url)
         else:
-            meta = {
+            meta_wikipedia_url_fail = {
                 'key': 'wikipedia_url_fail',
                 'entity_id': c.id,
                 'type': 'int',
                 'value': 1
             }
+            c.save_meta(meta_wikipedia_url_fail)
         print ''
 
 
 def show_company_wikipedia_url():
-    companies = company_collections.get_companies_by_meta('wikipedia_url', 3)
+    companies = company_collections.get_companies_by_meta('wikipedia_url', 1)
     # companies = db.ex(qry)
     if len(companies) == 0:
         print 'No companies found with wikipedia_url'

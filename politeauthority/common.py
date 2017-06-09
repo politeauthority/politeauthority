@@ -1,5 +1,7 @@
 import os
 import subprocess
+from difflib import SequenceMatcher
+import string
 
 
 def file_safe_date(the_date):
@@ -65,3 +67,17 @@ def uncompress_file(infile, outfile=None, password=None, remove_original=True):
         return infile
     if outfile:
         return outfile
+
+
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def remove_punctuation(the_string, exceptions=''):
+    the_string = str(the_string)
+    punc = string.punctuation
+    if exceptions:
+        punc = punc.translate(None, exceptions)
+    return the_string.translate(None, punc)
+
+# End File politeauthority/politeauthority/common.py

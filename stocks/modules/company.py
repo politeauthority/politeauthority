@@ -25,8 +25,7 @@ from datetime import datetime
 
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
-
-from meta import Meta
+from politeauthority.meta import Meta
 
 db = DriverMysql(environmental.mysql_conf())
 
