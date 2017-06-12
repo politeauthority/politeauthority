@@ -102,19 +102,14 @@ class Meta(object):
                 value = '","'.join(meta['value'])
             else:
                 value = meta['value']
-            info['val_list'] = db.escape_string(value)
+            info['val_text'] = db.escape_string(value)
         elif meta['type'] == 'pickle':
-            print 'here'
-            info['pickle'] = db.escape_string(cPickle.dumps(meta['value']))
+            info['val_text'] = db.escape_string(cPickle.dumps(meta['value']))
 
         if info['val_list']:
             info['val_text'] = info['val_list']
-            info.pop('val_list')
-        print 'the picky'
-        print info['val_pickle']
-        if info['val_pickle']:
-            info['val_text'] = info['val_pickle']
-            info.pop('val_pickle')
+        info.pop('val_list')
+        info.pop('val_pickle')
 
         for field, item in info.iteritems():
             if field in ['schema', 'table']:
@@ -122,15 +117,16 @@ class Meta(object):
             if not item:
                 info[field] = "NULL"
                 continue
-            if not isinstance(item, (int, long)) or isinstance(item, float):
+            if not isinstance(item, (int, long, float)):
                 info[field] = '"%s"' % item
         qry = """INSERT INTO `%(schema)s`.`%(table)s`
                  (`key`, `entity_type`, `entity_id`, `meta_type`, `val_decimal`, `val_int`, `val_varchar`,
                   `val_text`, `val_datetime`, `ts_update`)
                 VALUES (%(key)s, %(entity_type)s, %(entity_id)s, %(meta_type)s, %(val_decimal)s,
                     %(val_int)s, %(val_varchar)s, %(val_text)s, %(val_datetime)s, NOW())
-                ON DUPLICATE KEY UPDATE `meta_type`=%(meta_type)s, `val_decimal`=%(val_decimal)s, `val_int`=%(val_int)s,
-                  `val_varchar`=%(val_varchar)s, `val_text`=%(val_text)s, `val_datetime`=%(val_datetime)s"""
+                ON DUPLICATE KEY UPDATE `meta_type`=%(meta_type)s, `val_decimal`=%(val_decimal)s,
+                    `val_int`=%(val_int)s, `val_varchar`=%(val_varchar)s, `val_text`=%(val_text)s,
+                    `val_datetime`=%(val_datetime)s"""
         if info['val_text']:
             print meta['type']
             print info['val_text']
@@ -182,7 +178,6 @@ class Meta(object):
             if m_type == 'list':
                 ret_value = ret_value.split(',')
             elif m_type == 'pickle':
-                # @todo: picke not yet supported, need to pickle and unpickle
                 if ret_value:
                     ret_value = cPickle.loads(ret_value)
 
