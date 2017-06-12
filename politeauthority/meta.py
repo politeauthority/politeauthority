@@ -41,9 +41,8 @@
       UNIQUE KEY `unique_index` (`key`,`entity_type`,`entity_id`)
     )
 """
-import decimal
-from datetime import datetime
 import cPickle
+import pprint
 
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
@@ -69,17 +68,18 @@ class Meta(object):
                 'id': int Optional,
             }
         """
-        if 'id' not in meta:
-            meta['id'] = None
         info = {
             'schema': self.schema,
             'table': self.table,
-            'meta_id': meta['id'],
-            'key':  '%s' % meta['key'],
-            'entity_type': 'company',
+            'key': '%s' % meta['key'],
+            'entity_type': meta['entity_type'],
             'entity_id': meta['entity_id'],
             'meta_type': meta['type'],
         }
+
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(meta)
+
         info['val_decimal'] = None
         info['val_int'] = None
         info['val_varchar'] = None
@@ -104,11 +104,14 @@ class Meta(object):
                 value = meta['value']
             info['val_list'] = db.escape_string(value)
         elif meta['type'] == 'pickle':
-            info['val_piclkle'] = db.escape_string(cPickle.dumps(meta['value']))
+            print 'here'
+            info['pickle'] = db.escape_string(cPickle.dumps(meta['value']))
 
         if info['val_list']:
             info['val_text'] = info['val_list']
             info.pop('val_list')
+        print 'the picky'
+        print info['val_pickle']
         if info['val_pickle']:
             info['val_text'] = info['val_pickle']
             info.pop('val_pickle')
@@ -119,7 +122,7 @@ class Meta(object):
             if not item:
                 info[field] = "NULL"
                 continue
-            if not isinstance(item, int) or isinstance(item, decimal):
+            if not isinstance(item, (int, long)) or isinstance(item, float):
                 info[field] = '"%s"' % item
         qry = """INSERT INTO `%(schema)s`.`%(table)s`
                  (`key`, `entity_type`, `entity_id`, `meta_type`, `val_decimal`, `val_int`, `val_varchar`,
@@ -130,7 +133,9 @@ class Meta(object):
                   `val_varchar`=%(val_varchar)s, `val_text`=%(val_text)s, `val_datetime`=%(val_datetime)s"""
         if info['val_text']:
             print meta['type']
+            print info['val_text']
             print 'TEXT OR PICKLE OR DATE!'
+            pp.pprint(info)
             print qry % info
         db.ex(qry % info)
 
@@ -145,11 +150,11 @@ class Meta(object):
                     AND
                     `entity_id`=%s
                     %s; """ % (
-                        self.schema,
-                        self.table,
-                        meta['entity_type'],
-                        meta['entity_id'],
-                        key_in_qry)
+            self.schema,
+            self.table,
+            meta['entity_type'],
+            meta['entity_id'],
+            key_in_qry)
         meta = db.ex(qry)
         entity_meta = {}
         for m in meta:
