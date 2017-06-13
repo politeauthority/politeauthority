@@ -171,7 +171,7 @@ def update_data_from_yahoo(only_interesting=False):
 
 
 def get_company_wikipedia_url():
-    companies = company_collections.get_companies_for_wiki_seach(10)
+    companies = company_collections.get_companies_for_wiki_seach(100)
     # companies = db.ex(qry)
 
     for c in companies:
@@ -195,9 +195,11 @@ def get_company_wikipedia_url():
             print 'Could not Find wiki artical for %s, Error: %s' % (c.name, e)
             print ''
             continue
+        wiki_url = common.remove_punctuation(wiki.url[30:]).replace('_', ' ')
+
         wsd = {  # wiki seasrch data
             'sim_title': common.similar(c.name, wiki.title),
-            'sim_url': common.similar(c.name, common.remove_punctuation(wiki.url[30:])),
+            'sim_url': common.similar(c.name, wiki_url),
             'wiki_url': wiki.url,
             'wiki_url_text': common.remove_punctuation(wiki.url[30:])
         }
@@ -217,7 +219,7 @@ def get_company_wikipedia_url():
         print 'sim total:    %s' % wsd['sim_total']
 
         meta_wiki_search = {
-            'key': 'wiki_search',
+            'meta_key': 'wiki_search',
             'entity_id': c.id,
             'type': 'pickle',
             'value': wsd
@@ -235,7 +237,7 @@ def get_company_wikipedia_url():
 
         if wsd['sim_accepted']:
             meta_wikipedia_url = {
-                'key': 'wikipedia_url',
+                'meta_key': 'wikipedia_url',
                 'entity_id': c.id,
                 'type': 'varchar',
                 'value': wiki.url
@@ -244,7 +246,7 @@ def get_company_wikipedia_url():
             c.save_meta(meta_wikipedia_url)
         else:
             meta_wikipedia_url_fail = {
-                'key': 'wikipedia_url_fail',
+                'meta_key': 'wikipedia_url_fail',
                 'entity_id': c.id,
                 'type': 'int',
                 'value': 1
@@ -265,7 +267,6 @@ def show_company_wikipedia_url():
         # print c.meta
         if 'wikipedia_url' in c.meta:
             print c.meta['wikipedia_url']['value']
-
     # print all_companies
 
 if __name__ == '__main__':

@@ -26,7 +26,7 @@
     SQL Table
     CREATE TABLE `your_schema`.`meta` (
       `meta_id`        BIGINT(20) unsigned NOT NULL AUTO_INCREMENT,
-      `key`            VARCHAR(50) DEFAULT NULL,
+      `meta_key`       VARCHAR(50) DEFAULT NULL,
       `entity_type`    VARCHAR(10) DEFAULT NULL,
       `entity_id`      VARCHAR(255) DEFAULT NULL,
       `meta_type`      VARCHAR(10) DEFAULT NULL,
@@ -38,11 +38,10 @@
       `ts_created`     DATETIME DEFAULT CURRENT_TIMESTAMP,
       `ts_update` DATETIME ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY (`meta_id`),
-      UNIQUE KEY `unique_index` (`key`,`entity_type`,`entity_id`)
+      UNIQUE KEY `unique_index` (`mata_key`,`entity_type`,`entity_id`)
     )
 """
 import cPickle
-import pprint
 
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
@@ -71,14 +70,11 @@ class Meta(object):
         info = {
             'schema': self.schema,
             'table': self.table,
-            'key': '%s' % meta['key'],
+            'meta_key': '%s' % meta['meta_key'],
             'entity_type': meta['entity_type'],
             'entity_id': meta['entity_id'],
             'meta_type': meta['type'],
         }
-
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(meta)
 
         info['val_decimal'] = None
         info['val_int'] = None
@@ -120,26 +116,20 @@ class Meta(object):
             if not isinstance(item, (int, long, float)):
                 info[field] = '"%s"' % item
         qry = """INSERT INTO `%(schema)s`.`%(table)s`
-                 (`key`, `entity_type`, `entity_id`, `meta_type`, `val_decimal`, `val_int`, `val_varchar`,
+                 (`meta_key`, `entity_type`, `entity_id`, `meta_type`, `val_decimal`, `val_int`, `val_varchar`,
                   `val_text`, `val_datetime`, `ts_update`)
-                VALUES (%(key)s, %(entity_type)s, %(entity_id)s, %(meta_type)s, %(val_decimal)s,
+                VALUES (%(meta_key)s, %(entity_type)s, %(entity_id)s, %(meta_type)s, %(val_decimal)s,
                     %(val_int)s, %(val_varchar)s, %(val_text)s, %(val_datetime)s, NOW())
                 ON DUPLICATE KEY UPDATE `meta_type`=%(meta_type)s, `val_decimal`=%(val_decimal)s,
                     `val_int`=%(val_int)s, `val_varchar`=%(val_varchar)s, `val_text`=%(val_text)s,
                     `val_datetime`=%(val_datetime)s"""
-        if info['val_text']:
-            print meta['type']
-            print info['val_text']
-            print 'TEXT OR PICKLE OR DATE!'
-            pp.pprint(info)
-            print qry % info
         db.ex(qry % info)
 
     def load_meta(self, meta, keys=[]):
         key_in_qry = ''
         if len(keys) > 0:
             key_in = '"%s",'.join(keys)
-            key_in_qry = ' AND key IN (%s)' % key_in
+            key_in_qry = ' AND meta_key IN (%s)' % key_in
         qry = """SELECT * FROM `%s`.`%s`
                  WHERE
                     `entity_type`="%s"
@@ -183,7 +173,7 @@ class Meta(object):
 
             entity_meta[m_key] = {
                 'meta_id': m[0],
-                'key': m_key,
+                'meta_key': m_key,
                 'entity_type': m[2],
                 'value': ret_value,
                 'ts_created': m[10],

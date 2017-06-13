@@ -21,17 +21,17 @@ SELECT DISTINCT (`sector`), count(*)
     ORDER BY 2;
 
 
-SELECT c.name, m.meta_type, m.key, m.val_varchar 
+SELECT c.name, m.meta_type, m.meta_value, m.val_varchar 
     FROM stocks.companies c
     JOIN stocks.meta m
     ON c.id=m.entity_id AND m.entity_type='company';
 
 
-SELECT c.name, c.sector, m.meta_type, m.key, m.val_varchar 
+SELECT c.name, c.sector, m.meta_type,  m.val_varchar 
     FROM stocks.companies c
         JOIN stocks.meta m
             ON c.id=m.entity_id AND m.entity_type='company'
     WHERE
-        m.key = 'wikipedia_url';
+        m.meta_key = 'wikipedia_url';
 
 select * from stocks.meta;
