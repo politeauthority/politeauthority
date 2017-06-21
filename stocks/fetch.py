@@ -114,6 +114,31 @@ def process_nasdaq_public_data_market(phile, market):
     # os.rm(phile)
 
 
+def get_one_year():
+    companies = company_collections.get_companies_wo_meta('one_year', 100)
+    for company in companies:
+        print company.name
+        print company.symbol
+        url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
+        r = requests.get(url)
+        year_file = os.path.join(download_path, "%s.csv" % company.symbol)
+        with open(year_file, 'wb') as code:
+            code.write(r.content)
+        f = open(year_file, 'rb')
+        reader = csv.reader(f)
+        c = 0
+        for row in reader:
+            c += 1
+            if c == 1:
+                continue
+            print row
+
+            q = Quote()
+            q.date = datetime.strptime(row[0], '%d-%b-%y')
+            print q.date
+            print ''
+
+
 def update_data_from_yahoo(only_interesting=False):
     if only_interesting:
         where_qry = '`symbol` IN ("%s")' % '","'.join(INTERSTING_SYMBOLS)
@@ -271,7 +296,8 @@ def show_company_wikipedia_url():
 
 if __name__ == '__main__':
     args = docopt(__doc__)
-    get_company_wikipedia_url()
+    get_one_year()
+    # get_company_wikipedia_url()
     # show_company_wikipedia_url()
     exit()
     if args['--build_from_nasdaq']:
