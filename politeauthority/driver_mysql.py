@@ -110,7 +110,6 @@ class DriverMysql(object):
         if '.' in db_or_table_or_both:
             the_sql = db_or_table_or_both.split('.')
             pretty = """`%s`.`%s`""" % (the_sql[0], the_sql[1])
-            print pretty
         else:
             if self.dbname != '':
                 pretty = """`%s`.`%s`""" % (self.dbname, db_or_table_or_both)
