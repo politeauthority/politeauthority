@@ -11,6 +11,7 @@ Options:
     --build_from_nasdaq   Populates company table and last_price column,
                              most likely from the day. Best to run this EOB
     --one_year             Backfill 1 year quote data from Google
+    --daily               Runs after market close routines
     -d --debug            Run the console at debug level
 
     markets open between 7:30am - 2pm MTN
@@ -242,7 +243,7 @@ if __name__ == '__main__':
     args = docopt(__doc__)
     if args['--build_from_nasdaq']:
         base_companies_nyse_nasdaq.run()
-    if args['--build_from_nasdaq']:
+    if args['--daily']:
         update_data_from_yahoo()
     if args['--one_year']:
         get_one_year()

@@ -11,6 +11,7 @@
 """
 
 import MySQLdb as mdb
+from datetime import datetime
 
 
 class DriverMysql(object):
@@ -87,6 +88,56 @@ class DriverMysql(object):
             table, set_sql, where_sql, limit)
         # self.ex( sql )
         return sql
+
+    def iodku(self, table, items):
+        sep = self.__separate_items(items)
+        cols = sep['columns']
+        vals = sep['values']
+        qry = """
+                 INSERT INTO %(table)s
+                    (%(columns)s)
+                    VALUES (%(values)s)
+                ON DUPLICATE KEY UPDATE
+                    %(update_sql)s;""" % {
+            'table': self.__format_db_table_sql(table),
+            'columns': self.__sql_col(cols),
+            'values': self.__sql_val(vals),
+            'update_sql': self.__sql_update(cols, vals)
+        }
+        print qry
+        self.ex(qry)
+        return qry
+
+    def __separate_items(self, items):
+        columns = []
+        values = []
+        for column, value in items.items():
+            columns.append(column)
+            values.append(value)
+        return {'columns': columns, 'values': values}
+
+    def __sql_col(self, cols):
+        sql = ''
+        for c in cols:
+            sql += "`%s`, " % c
+        return sql[:-2]
+
+    def __sql_val(self, vals):
+        sql = ''
+        for v in vals:
+            if isinstance(v, int) or isinstance(v, float):
+                sql += '%s, ' % v
+            elif isinstance(v, datetime):
+                sql += '"%s", ' % v
+            else:
+                sql += '"%s", ' % self.escape_string(v)
+        return sql[:-2]
+
+    def __sql_update(self, cols, vals):
+        sql = ''
+        for x in range(0, len(cols)):
+            sql += """`%s` = "%s", """ % (cols[x], vals[x])
+        return sql[:-2]
 
     def escape_string(self, string):
         return self.conn.escape_string(string)

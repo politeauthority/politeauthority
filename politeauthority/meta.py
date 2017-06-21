@@ -57,25 +57,70 @@ class Meta(object):
         self.schema = None
         self.table = 'meta'
 
+    def new(self, meta):
+        self.__table()
+
+        meta['val_decimal'] = None
+        meta['val_int'] = None
+        meta['val_varchar'] = None
+        meta['val_text'] = None
+        meta['val_datetime'] = None
+        if meta['meta_type'] == 'decimal':
+            meta['val_decimal'] = meta['value']
+        elif meta['meta_type'] == 'int':
+            meta['val_int'] = meta['value']
+        elif meta['meta_type'] == 'varchar':
+            meta['val_varchar'] = meta['value']
+        elif meta['meta_type'] == 'text':
+            meta['val_text'] = meta['value']
+        elif meta['meta_type'] == 'datetime':
+            meta['val_datetime'] = meta['value']
+        elif meta['meta_type'] == 'list':
+            if isinstance(meta['value'], list):
+                value = '"%s"' % '", "'.join(meta['value'])
+            else:
+                value = meta['value']
+            meta['val_text'] = db.escape_string(value)
+        elif meta['meta_type'] == 'pickle':
+            meta['val_text'] = cPickle.dumps(meta['value'])
+        print meta
+        data = {}
+        m_fields = ['id', 'meta_key', 'entity_type', 'entity_id', 'meta_type', 'val_decimal',
+                    'val_int', 'val_varchar', 'val_text', 'val_datetime']
+        for x, y in meta.iteritems():
+            if y and x in m_fields:
+                data[x] = y
+        print data
+        print db.iodku(self.meta_table, data)
+
     def save(self, meta):
         """
-            Will insert, on duplicate keyt update. Keyed on key, entity_type, entity_id
+            Will insert, on duplicate keyt update. Keyed on meta_key, entity_type, entity_id
             meta{
-                'key':        varchar  REQUIRED UNIQUE KEY,
+                'meta_key':   varchar  REQUIRED UNIQUE KEY,
                 'entity_type' varchar  REQUIRED UNIQUE KEY,
                 'entity_id'   int      REQUIRED UNIQUE KEY,
-                'meta_type'   varchar  REQUIRED UNIQUE KEY (decimal, int, varchar, text or datetime),
+                'meta_type'   varchar  REQUIRED UNIQUE KEY
+                                (decimal, int, varchar, text or datetime),
                 'value':      basically any data type
                 'id': int Optional,
             }
         """
+        if 'meta_key' not in meta:
+            raise Exception('`meta_key` REQUIRED')
+        if 'meta_type' not in meta:
+            raise Exception('`meta_type` REQUIRED')
+        if 'entity_id' not in meta:
+            raise Exception('`entity_id` REQUIRED')
+        if 'entity_type' not in meta:
+            raise Exception('`entity_type` REQUIRED')
         info = {
             'schema': self.schema,
             'table': self.table,
             'meta_key': '%s' % meta['meta_key'],
             'entity_type': meta['entity_type'],
             'entity_id': meta['entity_id'],
-            'meta_type': meta['type'],
+            'meta_type': meta['meta_type'],
         }
 
         info['val_decimal'] = None
@@ -85,23 +130,23 @@ class Meta(object):
         info['val_datetime'] = None
         info['val_list'] = None
         info['val_pickle'] = None
-        if meta['type'] == 'decimal':
+        if meta['meta_type'] == 'decimal':
             info['val_decimal'] = meta['value']
-        elif meta['type'] == 'int':
+        elif meta['meta_type'] == 'int':
             info['val_int'] = meta['value']
-        elif meta['type'] == 'varchar':
+        elif meta['meta_type'] == 'varchar':
             info['val_varchar'] = db.escape_string(meta['value'])
-        elif meta['type'] == 'text':
+        elif meta['meta_type'] == 'text':
             info['val_text'] = db.escape_string(meta['value'])
-        elif meta['type'] == 'datetime':
+        elif meta['meta_type'] == 'datetime':
             info['val_datetime'] = meta['value']
-        elif meta['type'] == 'list':
+        elif meta['meta_type'] == 'list':
             if isinstance(meta['value'], list):
                 value = '","'.join(meta['value'])
             else:
                 value = meta['value']
             info['val_text'] = db.escape_string(value)
-        elif meta['type'] == 'pickle':
+        elif meta['meta_type'] == 'pickle':
             info['val_text'] = db.escape_string(cPickle.dumps(meta['value']))
 
         if info['val_list']:
@@ -127,7 +172,7 @@ class Meta(object):
                     `val_datetime`=%(val_datetime)s;"""
         db.ex(qry % info)
 
-    def load_meta(self, meta, keys=[]):
+    def load(self, meta, keys=[]):
         key_in_qry = ''
         if len(keys) > 0:
             key_in = '"%s",'.join(keys)
@@ -182,5 +227,11 @@ class Meta(object):
                 'ts_updated': m[11],
             }
         return entity_meta
+
+    def __table(self):
+        if not self.schema:
+            self.meta_table = self.table
+        else:
+            self.meta_table = "%s.%s" % (self.schema, self.table)
 
 # End File politeauthority/politeauthority/meta.py
