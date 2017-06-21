@@ -117,7 +117,7 @@ class Meta(object):
         for x, y in meta.iteritems():
             if y and x in m_fields:
                 data[x] = y
-        print db.iodku(self.meta_table, data)
+        db.iodku(self.meta_table, data)
 
     def load(self, meta, keys=[]):
         self.__table()

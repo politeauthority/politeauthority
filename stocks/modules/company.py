@@ -68,6 +68,7 @@ class Company(object):
         if len(company_row) <= 0:
             return None
         self.build_from_row(company_row[0])
+        self.load()
         return self
 
     def build_from_row(self, company_row):
@@ -111,6 +112,9 @@ class Company(object):
 
             db.insert('stocks.companies', data)
 
+    def load(self):
+        self.load_meta()
+
     def load_meta(self):
         info = {}
         info['entity_id'] = self.id
@@ -120,5 +124,5 @@ class Company(object):
     def save_meta(self, meta_info):
         meta_info['entity_id'] = self.id
         meta_info['entity_type'] = 'company'
-        print meta_info
+        meta_info
         m.save(meta_info)

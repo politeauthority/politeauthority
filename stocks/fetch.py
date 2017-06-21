@@ -10,7 +10,8 @@ Options:
     --get_interesting     Fetch Interesting companies only.
     --build_from_nasdaq   Populates company table and last_price column,
                              most likely from the day. Best to run this EOB
-    --one_year             Backfill 1 year quote data from Google
+    --one_year            Backfill 1 year quote data from Google where we dont have
+    --get_wiki            Get company wikipedia urls where we dont have them
     --daily               Runs after market close routines
     -d --debug            Run the console at debug level
 
@@ -24,7 +25,6 @@ from datetime import datetime
 from datetime import timedelta
 import csv
 from yahoo_finance import Share
-# from google import google
 import wikipedia
 
 from politeauthority import common
@@ -46,12 +46,15 @@ db = DriverMysql(environmental.mysql_conf())
 
 
 def get_one_year():
+    total = 1000
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = company_collections.get_companies_wo_meta('one_year', 10)
+    companies = company_collections.get_companies_wo_meta('one_year', total)
+    count = 0
     for company in companies:
+        count += 1
+        print "Working %s/%s" % (count, total)
         print "<%s> %s" % (company.symbol, company.name)
-        # print company
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
         csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
@@ -84,7 +87,6 @@ def get_one_year():
             'meta_type': 'datetime',
             'value': q.date
         }
-        print meta
         company.save_meta(meta)
         print 'Saved %s Quotes\n' % c
 
@@ -146,7 +148,7 @@ def update_data_from_yahoo(only_interesting=False):
 
 
 def get_company_wikipedia_url():
-    companies = company_collections.get_companies_for_wiki_seach(100)
+    companies = company_collections.get_companies_wo_meta('wikipedia_url', 100)
     # companies = db.ex(qry)
 
     for c in companies:
@@ -196,7 +198,7 @@ def get_company_wikipedia_url():
         meta_wiki_search = {
             'meta_key': 'wiki_search',
             'entity_id': c.id,
-            'type': 'pickle',
+            'meta_type': 'pickle',
             'value': wsd
         }
         c.save_meta(meta_wiki_search)
@@ -214,7 +216,7 @@ def get_company_wikipedia_url():
             meta_wikipedia_url = {
                 'meta_key': 'wikipedia_url',
                 'entity_id': c.id,
-                'type': 'varchar',
+                'meta_type': 'varchar',
                 'value': wiki.url
             }
             print 'saving wikipedia_url'
@@ -223,7 +225,7 @@ def get_company_wikipedia_url():
             meta_wikipedia_url_fail = {
                 'meta_key': 'wikipedia_url_fail',
                 'entity_id': c.id,
-                'type': 'int',
+                'meta_type': 'int',
                 'value': 1
             }
             c.save_meta(meta_wikipedia_url_fail)
@@ -244,6 +246,11 @@ def show_company_wikipedia_url():
             print c.meta['wikipedia_url']['value']
     # print all_companies
 
+
+def daily():
+    print 'do daily shit'
+
+
 if __name__ == '__main__':
     args = docopt(__doc__)
     if args['--build_from_nasdaq']:
@@ -254,3 +261,5 @@ if __name__ == '__main__':
         get_one_year()
     if args['--get_interesting']:
         update_data_from_yahoo(only_interesting=True)
+    if args['--get_wiki']:
+        get_company_wikipedia_url()

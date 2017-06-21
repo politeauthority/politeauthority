@@ -32,23 +32,6 @@ def get_companies_by_meta(meta_key, limit=None, exists=True):
     return __qry_to_companies(qry)
 
 
-def get_companies_for_wiki_seach(limit=10):
-    qry = """SELECT c.`id`
-         FROM `stocks`.`companies` c
-         LEFT JOIN `stocks`.`meta` m
-            ON
-                c.id = m.entity_id
-                AND
-                m.entity_type="company"
-                AND
-                m.meta_key!="%s"
-        WHERE
-            1=1
-        ORDER BY c.last_update_ts ASC
-        LIMIT %s""" % ('wikipedia_url', limit)
-    return __qry_to_companies(qry)
-
-
 def get_companies_wo_meta(meta, limit=10):
     qry = """
              SELECT c.id
