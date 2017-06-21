@@ -41,18 +41,22 @@ INTERSTING_SYMBOLS = ['YHOO', 'VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AY
                       'MULE']
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-download_path = os.path.join(current_dir, 'downloads')
+download_path = os.path.join(environmental.get_temp_dir(), 'stocks')
 db = DriverMysql(environmental.mysql_conf())
 
 
 def get_one_year():
-    companies = company_collections.get_companies_wo_meta('one_year', 500)
+    if not os.path.exists(download_path):
+        os.makedirs(download_path)
+    companies = company_collections.get_companies_wo_meta('one_year', 10)
     for company in companies:
         print "<%s> %s" % (company.symbol, company.name)
         # print company
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
-        year_file = os.path.join(download_path, "%s.csv" % company.symbol)
+        csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
+        year_file = csv_file
+        print 'Downloading: %s' % csv_file
         with open(year_file, 'wb') as code:
             code.write(r.content)
         f = open(year_file, 'rb')
@@ -74,13 +78,14 @@ def get_one_year():
             q.close = row[4]
             q.volume = row[5]
             q.save()
-        meta_wiki_search = {
+        meta = {
             'meta_key': 'one_year',
             'entity_id': company.id,
-            'type': 'datetime',
+            'meta_type': 'datetime',
             'value': q.date
         }
-        company.save_meta(meta_wiki_search)
+        print meta
+        company.save_meta(meta)
         print 'Saved %s Quotes\n' % c
 
 

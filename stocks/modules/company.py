@@ -30,6 +30,8 @@ from politeauthority.driver_mysql import DriverMysql
 from politeauthority.meta import Meta
 
 db = DriverMysql(environmental.mysql_conf())
+m = Meta()
+m.schema = 'stocks'
 
 
 class Company(object):
@@ -66,7 +68,7 @@ class Company(object):
         if len(company_row) <= 0:
             return None
         self.build_from_row(company_row[0])
-        self.load_meta()
+        return self
 
     def build_from_row(self, company_row):
         self.id = company_row[0]
@@ -110,16 +112,13 @@ class Company(object):
             db.insert('stocks.companies', data)
 
     def load_meta(self):
-        m = Meta()
-        m.schema = 'stocks'
         info = {}
         info['entity_id'] = self.id
         info['entity_type'] = 'company'
-        self.meta = m.load_meta(info)
+        self.meta = m.load(info)
 
     def save_meta(self, meta_info):
-        m = Meta()
-        m.schema = 'stocks'
         meta_info['entity_id'] = self.id
         meta_info['entity_type'] = 'company'
+        print meta_info
         m.save(meta_info)
