@@ -3,10 +3,15 @@
  Mysql DB Driver
  This driver simplifies some of the MySQL interactions
  example usage
-    from politeauthority,driver_mysql import DriverMysql
+    from politeauthority.driver_mysql import DriverMysql
     db = DriverMysql(conf)
     db.ex('select * from `some_db`.`some_table`;')
-    db.ex('inert into `some_db`.`some_table` (`thing`, `otherthing`) VALUES ('yeah', nah);')
+    db.ex("insert into `some_db`.`some_table` (`thing`, `otherthing`) VALUES ('yeah', nah);")
+    data = {
+        'one': 2,
+        'three': 3,
+    }
+    db.iodku('some_db.some_table', data)
     db.conn.close()
 """
 
@@ -21,7 +26,7 @@ class DriverMysql(object):
             self.host = database['host']
             self.user = database['user']
             self.password = database['pass']
-            self.port = int(database.get('port', 3306))
+            self.port = database.get('port', 3306)
             self.dbname = database.get('name', '')
         self.create_conn()
 
@@ -45,11 +50,15 @@ class DriverMysql(object):
         self.conn.commit()
         return result
 
-    # insert
-    # @params
-    #   table  : str()
-    #   items  : dict{ 'column' : 'value' }
     def insert(self, table, items):
+        """
+        @desc:      Builds and runs an insert
+        @params:
+            table:  (str) schema and table or just table
+                        ex: 'stocks.meta'
+            items:  (dict) column and value pairs
+        @return:    (str) executed qry OR Exception from MySQL
+        """
         table = self.__format_db_table_sql(table)
         columns = []
         values = []
@@ -70,7 +79,11 @@ class DriverMysql(object):
 
         sql = """INSERT INTO %s (%s) VALUES(%s);""" % (
             table, column_sql, value_sql)
-        self.ex(sql)
+        try:
+            self.ex(sql)
+        except Exception, e:
+            print "%s: %s" % (Exception, e)
+            return Exception
         return sql
 
     def update(self, table, items, where, limit=1):
@@ -86,10 +99,17 @@ class DriverMysql(object):
 
         sql = """UPDATE %s SET %s WHERE %s LIMIT %s;""" % (
             table, set_sql, where_sql, limit)
-        # self.ex( sql )
         return sql
 
     def iodku(self, table, items):
+        """
+        @desc:      creates and runs an insert on duplicate key update query
+        @params:
+            table:  (str) schema and table or just table
+                        ex: 'stocks.meta'
+            items:  (dict) column and value pairs
+        @return:    (str) executed qry OR Exception from MySQL
+        """
         sep = self.__separate_items(items)
         cols = sep['columns']
         vals = sep['values']
@@ -104,11 +124,19 @@ class DriverMysql(object):
             'values': self.__sql_val(vals),
             'update_sql': self.__sql_update(cols, vals)
         }
-        print qry
-        self.ex(qry)
-        return qry
+        try:
+            self.ex(qry)
+            return qry
+        except Exception, e:
+            print "%s: %s" % (Exception, e)
+            return Exception
 
     def __separate_items(self, items):
+        """
+        @params:
+            items (dict) of cols related values
+        @return: (dict) of separated cols and values
+        """
         columns = []
         values = []
         for column, value in items.items():
@@ -117,12 +145,22 @@ class DriverMysql(object):
         return {'columns': columns, 'values': values}
 
     def __sql_col(self, cols):
+        """
+        @params
+            cols:   list of table columns
+        @return:    str of sql safe column declaration
+        """
         sql = ''
         for c in cols:
             sql += "`%s`, " % c
         return sql[:-2]
 
     def __sql_val(self, vals):
+        """
+        @params
+            vals:   list of table values
+        @return:    str of sql safe value declaration
+        """
         sql = ''
         for v in vals:
             if isinstance(v, int) or isinstance(v, float):
@@ -134,13 +172,20 @@ class DriverMysql(object):
         return sql[:-2]
 
     def __sql_update(self, cols, vals):
+        """
+        @params
+            cols:   list of table values
+            vals:   list of table values
+        @return:    str of sql safe update declaration
+                        ex `column`="value", `column`="value"
+        """
         sql = ''
         for x in range(0, len(cols)):
             sql += """`%s` = "%s", """ % (cols[x], vals[x])
         return sql[:-2]
 
     def escape_string(self, string):
-        return self.conn.escape_string(string)
+        return self.conn.escape_string(str(string))
 
     def alt_con(self, host, dbuser, dbpass, dbname=None, port=3306):
         self.host = host
@@ -149,13 +194,6 @@ class DriverMysql(object):
         self.password = dbpass
         self.port = int(port)
         return True
-
-    def list_to_string(self, the_list):
-        the_string = ''
-        for item in the_list:
-            the_string += '"%s", ' % item
-        the_string = the_string[:-2]
-        return the_string
 
     def __format_db_table_sql(self, db_or_table_or_both):
         if '.' in db_or_table_or_both:
@@ -168,4 +206,4 @@ class DriverMysql(object):
                 pretty = """`%s`""" % (db_or_table_or_both)
         return pretty
 
-# End File: __/drivers/DriverMysql
+# End File: politeauthority/driver_mysql.py

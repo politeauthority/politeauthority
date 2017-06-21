@@ -15,7 +15,7 @@ def get_logging_dir():
 
 def get_temp_dir():
     return os.environ.get(
-        'PA_BASE_LOGGING_DIR',
+        'PA_BASE_TEMP_DIR',
         '/tmp/politeauthority')
 
 

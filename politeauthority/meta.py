@@ -1,19 +1,27 @@
 """
-    Generic Meta class for mysql
+    Generic Meta class for MySQL
 
+    This Class can store and retrieve info for multiple entities, and multiple data types.
+        Currently supports decimal, int, varchar, datetime, pickle and list
+
+    Example Usage
+
+    # Basic save example
     from politeauthority.meta import Meta
 
-    def save_meta(self, meta_info):
+    def save_meta(meta_info):
         # see Meta().save() for description on meta_info
         m = Meta()
         m.schema = 'stocks'
-        meta_info['entity_id'] = self.id
+        meta_info['entity_id'] = 2
         meta_info['entity_type'] = 'company'
+        meta_info['meta_key'] = 'cool_info'
+        meta_info['meta_type'] = 'pickle'
+        meta_info['value'] = {'some': 'things'}
         m.save(meta_info)
 
 
-
-    Basic Load Example for a class
+    # Basic Load Example for a class
 
     from politeauthority.meta import Meta
 
@@ -57,9 +65,29 @@ class Meta(object):
         self.schema = None
         self.table = 'meta'
 
-    def new(self, meta):
+    def save(self, meta):
+        """
+        @desc:  Will save values into meta table with the correct stoage type and keying.
+        @param: meta    (dict)
+                    id              (int)
+                    meta_key        (str) REQUIRED  meta field name
+                    entity_type     (str) REQUIRED  type of object
+                    entity_id       (str) REQUIRED  id of object
+                    meta_type       (str) REQUIRED  type of storage
+                                        Options: ('decimal', 'int', 'varchar', 'datetime', 'pickle', 'list')
+                    value           (str||int||float||datetime||dict||list)
+        """
+        if not self.schema:
+            raise Exception('Table schema REQUIRED')
+        if 'meta_key' not in meta:
+            raise Exception('`meta_key` REQUIRED')
+        if 'meta_type' not in meta:
+            raise Exception('`meta_type` REQUIRED')
+        if 'entity_id' not in meta:
+            raise Exception('`entity_id` REQUIRED')
+        if 'entity_type' not in meta:
+            raise Exception('`entity_type` REQUIRED')
         self.__table()
-
         meta['val_decimal'] = None
         meta['val_int'] = None
         meta['val_varchar'] = None
@@ -83,108 +111,28 @@ class Meta(object):
             meta['val_text'] = db.escape_string(value)
         elif meta['meta_type'] == 'pickle':
             meta['val_text'] = cPickle.dumps(meta['value'])
-        print meta
         data = {}
         m_fields = ['id', 'meta_key', 'entity_type', 'entity_id', 'meta_type', 'val_decimal',
                     'val_int', 'val_varchar', 'val_text', 'val_datetime']
         for x, y in meta.iteritems():
             if y and x in m_fields:
                 data[x] = y
-        print data
         print db.iodku(self.meta_table, data)
 
-    def save(self, meta):
-        """
-            Will insert, on duplicate keyt update. Keyed on meta_key, entity_type, entity_id
-            meta{
-                'meta_key':   varchar  REQUIRED UNIQUE KEY,
-                'entity_type' varchar  REQUIRED UNIQUE KEY,
-                'entity_id'   int      REQUIRED UNIQUE KEY,
-                'meta_type'   varchar  REQUIRED UNIQUE KEY
-                                (decimal, int, varchar, text or datetime),
-                'value':      basically any data type
-                'id': int Optional,
-            }
-        """
-        if 'meta_key' not in meta:
-            raise Exception('`meta_key` REQUIRED')
-        if 'meta_type' not in meta:
-            raise Exception('`meta_type` REQUIRED')
-        if 'entity_id' not in meta:
-            raise Exception('`entity_id` REQUIRED')
-        if 'entity_type' not in meta:
-            raise Exception('`entity_type` REQUIRED')
-        info = {
-            'schema': self.schema,
-            'table': self.table,
-            'meta_key': '%s' % meta['meta_key'],
-            'entity_type': meta['entity_type'],
-            'entity_id': meta['entity_id'],
-            'meta_type': meta['meta_type'],
-        }
-
-        info['val_decimal'] = None
-        info['val_int'] = None
-        info['val_varchar'] = None
-        info['val_text'] = None
-        info['val_datetime'] = None
-        info['val_list'] = None
-        info['val_pickle'] = None
-        if meta['meta_type'] == 'decimal':
-            info['val_decimal'] = meta['value']
-        elif meta['meta_type'] == 'int':
-            info['val_int'] = meta['value']
-        elif meta['meta_type'] == 'varchar':
-            info['val_varchar'] = db.escape_string(meta['value'])
-        elif meta['meta_type'] == 'text':
-            info['val_text'] = db.escape_string(meta['value'])
-        elif meta['meta_type'] == 'datetime':
-            info['val_datetime'] = meta['value']
-        elif meta['meta_type'] == 'list':
-            if isinstance(meta['value'], list):
-                value = '","'.join(meta['value'])
-            else:
-                value = meta['value']
-            info['val_text'] = db.escape_string(value)
-        elif meta['meta_type'] == 'pickle':
-            info['val_text'] = db.escape_string(cPickle.dumps(meta['value']))
-
-        if info['val_list']:
-            info['val_text'] = info['val_list']
-        info.pop('val_list')
-        info.pop('val_pickle')
-
-        for field, item in info.iteritems():
-            if field in ['schema', 'table']:
-                continue
-            if not item:
-                info[field] = "NULL"
-                continue
-            if not isinstance(item, (int, long, float)):
-                info[field] = '"%s"' % item
-        qry = """INSERT INTO `%(schema)s`.`%(table)s`
-                 (`meta_key`, `entity_type`, `entity_id`, `meta_type`, `val_decimal`, `val_int`, `val_varchar`,
-                  `val_text`, `val_datetime`, `ts_update`)
-                VALUES (%(meta_key)s, %(entity_type)s, %(entity_id)s, %(meta_type)s, %(val_decimal)s,
-                    %(val_int)s, %(val_varchar)s, %(val_text)s, %(val_datetime)s, NOW())
-                ON DUPLICATE KEY UPDATE `meta_type`=%(meta_type)s, `val_decimal`=%(val_decimal)s,
-                    `val_int`=%(val_int)s, `val_varchar`=%(val_varchar)s, `val_text`=%(val_text)s,
-                    `val_datetime`=%(val_datetime)s;"""
-        db.ex(qry % info)
-
     def load(self, meta, keys=[]):
+        self.__table()
         key_in_qry = ''
         if len(keys) > 0:
             key_in = '"%s",'.join(keys)
             key_in_qry = ' AND meta_key IN (%s)' % key_in
-        qry = """SELECT * FROM `%s`.`%s`
+        qry = """SELECT *
+                 FROM %s
                  WHERE
                     `entity_type`="%s"
                     AND
                     `entity_id`=%s
                     %s; """ % (
-            self.schema,
-            self.table,
+            self.meta_table,
             meta['entity_type'],
             meta['entity_id'],
             key_in_qry)
@@ -222,6 +170,7 @@ class Meta(object):
                 'id': m[0],
                 'meta_key': m_key,
                 'entity_type': m[2],
+                'meta_type': m[4],
                 'value': ret_value,
                 'ts_created': m[10],
                 'ts_updated': m[11],
