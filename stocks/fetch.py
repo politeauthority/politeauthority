@@ -2,20 +2,18 @@
 fetch.py
 
 Usage:
-  fetch.py [--get_daily] [options]
-  fetch.py  (-h | --help)
+    fetch.py [--get_daily] [options]
+    fetch.py  (-h | --help)
 
 Options:
-  -h --help             Shows this screen.
-  --get_interesting      Fetch Interesting companies only.
-  --build_from_nasdaq   Populates company table and last_price column,
-                            most likely from the day. Best to run this EOB
-  -d --debug            Run the console at debug level
+    -h --help             Shows this screen.
+    --get_interesting     Fetch Interesting companies only.
+    --build_from_nasdaq   Populates company table and last_price column,
+                             most likely from the day. Best to run this EOB
+    --one_year             Backfill 1 year quote data from Google
+    -d --debug            Run the console at debug level
 
-
-
-  markets open between 7:30am - 2pm MTN
-
+    markets open between 7:30am - 2pm MTN
 """
 
 from docopt import docopt
@@ -36,6 +34,8 @@ from modules.company import Company
 from modules.quote import Quote
 from modules import company_collections
 
+from one_fetch import base_companies_nyse_nasdaq
+
 INTERSTING_SYMBOLS = ['YHOO', 'VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
                       'MULE']
 
@@ -44,81 +44,11 @@ download_path = os.path.join(current_dir, 'downloads')
 db = DriverMysql(environmental.mysql_conf())
 
 
-def download_nasdaq_public_data():
-    """
-        Mostly grabs just base data to start the DB
-    """
-    url_nasdaq = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NASDAQ&render=download"
-    url_nyse = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NYSE&render=download"
-
-    if not os.path.exists(download_path):
-        os.mkdir(download_path)
-
-    downloaded_files = {}
-
-    print 'Downloading Nasdaq'
-    file_nasdaq = os.path.join(download_path, 'nasdaq_%s.csv' % common.file_safe_date(datetime.now()))
-    r = requests.get(url_nasdaq)
-    with open(os.path.join(download_path, file_nasdaq), 'wb') as code:
-        code.write(r.content)
-    downloaded_files['nasdaq'] = file_nasdaq
-
-    print 'Downloading NYSE'
-    file_nyse = os.path.join(download_path, 'nasdaq_%s.csv' % common.file_safe_date(datetime.now()))
-    r = requests.get(url_nyse)
-    with open(os.path.join(download_path, file_nyse), 'wb') as code:
-        code.write(r.content)
-    downloaded_files['nyse'] = file_nyse
-    return downloaded_files
-
-
-def process_nasdaq_public_data(philes):
-    process_nasdaq_public_data_market(philes['nasdaq'], 'nasdaq')
-    process_nasdaq_public_data_market(philes['nyse'], 'nyse')
-
-
-def process_nasdaq_public_data_market(phile, market):
-    f = open(phile, 'rb')
-    reader = csv.reader(f)
-    c = 0
-    for row in reader:
-        c += 1
-        if c == 1:
-            continue
-        vals = {
-            'symbol': row[0],
-            'name': row[1],
-            'last_sale': row[2],
-            'market_cap': row[3],
-            'ipo_year': row[5],
-            'sector': row[6],
-            'industry': row[7],
-            'exchange': market,
-            'last_update_ts': datetime.now()
-        }
-        if vals['last_sale'] in ['n/a']:
-            continue
-        qry = """SELECT * FROM `stocks`.`companies`
-                 WHERE `exchange`="%s" AND `name`="%s" """ % (market, row[1])
-        company = db.ex(qry)
-        if len(company) == 0:
-            qry = """INSERT INTO `stocks`.`companies`
-                     (`symbol`, `name`, `last_sale`, `market_cap`, `ipo_year`, `sector`, `industry`,
-                      `exchange`, `last_update_ts`)
-                     VALUES
-                     ("%(symbol)s", "%(name)s", "%(last_sale)s", "%(market_cap)s",
-                      "%(ipo_year)s", "%(sector)s", "%(industry)s", "%(exchange)s", "%(last_update_ts)s" )"""
-            db.ex(qry % vals)
-        else:
-            print "Already have: %s " % vals['name']
-    # os.rm(phile)
-
-
 def get_one_year():
-    companies = company_collections.get_companies_wo_meta('one_year', 100)
+    companies = company_collections.get_companies_wo_meta('one_year', 500)
     for company in companies:
-        print company.name
-        print company.symbol
+        print "<%s> %s" % (company.symbol, company.name)
+        # print company
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
         year_file = os.path.join(download_path, "%s.csv" % company.symbol)
@@ -131,12 +61,26 @@ def get_one_year():
             c += 1
             if c == 1:
                 continue
-            print row
-
             q = Quote()
+            q.company_id = company.id
             q.date = datetime.strptime(row[0], '%d-%b-%y')
-            print q.date
-            print ''
+            if row[1] not in ['-']:
+                q.open = row[1]
+            if row[2] not in ['-']:
+                q.high = row[2]
+            if row[3] not in ['-']:
+                q.low = row[3]
+            q.close = row[4]
+            q.volume = row[5]
+            q.save()
+        meta_wiki_search = {
+            'meta_key': 'one_year',
+            'entity_id': company.id,
+            'type': 'datetime',
+            'value': q.date
+        }
+        company.save_meta(meta_wiki_search)
+        print 'Saved %s Quotes\n' % c
 
 
 def update_data_from_yahoo(only_interesting=False):
@@ -222,7 +166,7 @@ def get_company_wikipedia_url():
             continue
         wiki_url = common.remove_punctuation(wiki.url[30:]).replace('_', ' ')
 
-        wsd = {  # wiki seasrch data
+        wsd = {  # wiki search data
             'sim_title': common.similar(c.name, wiki.title),
             'sim_url': common.similar(c.name, wiki_url),
             'wiki_url': wiki.url,
@@ -296,15 +240,11 @@ def show_company_wikipedia_url():
 
 if __name__ == '__main__':
     args = docopt(__doc__)
-    get_one_year()
-    # get_company_wikipedia_url()
-    # show_company_wikipedia_url()
-    exit()
     if args['--build_from_nasdaq']:
-        philes = download_nasdaq_public_data()
-        process_nasdaq_public_data(philes)
-        print philes
-    if args['--get_daily']:
+        base_companies_nyse_nasdaq.run()
+    if args['--build_from_nasdaq']:
         update_data_from_yahoo()
+    if args['--one_year']:
+        get_one_year()
     if args['--get_interesting']:
         update_data_from_yahoo(only_interesting=True)

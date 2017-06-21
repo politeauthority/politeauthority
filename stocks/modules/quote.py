@@ -2,7 +2,7 @@
     Quote Model
 
     QUOTE TABLE
-    CREATE TABLE `quotes` (
+    CREATE TABLE `stocks`.`quotes` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `company_id` bigint(20) DEFAULT NULL,
         `open` decimal(20,4) DEFAULT NULL,
@@ -11,7 +11,8 @@
         `low` decimal(20,4) DEFAULT NULL,
         `volume` bigint(20) DEFAULT NULL,
         `date` datetime DEFAULT NULL,
-        PRIMARY KEY (`id`)
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `unique_index` (`company_id`, `date`)
     );
 
 """
@@ -34,6 +35,9 @@ class Quote(object):
         self.low = None
         self.volume = None
         self.date = None
+
+    def __repr__(self):
+        return '<Quote %r, %r>' % (self.date, self.company_id)
 
     def get_by_id(self, quote_id):
         self.id = quote_id
@@ -98,11 +102,14 @@ class Quote(object):
 
             ins_v = ins_v[:-2]
             qry = """INSERT INTO `stocks`.`quotes`
-                    (%s)
+                     (%s)
                      VALUES
                      (%s);""" % (
                 ins_f,
                 ins_v
             )
-            db.ex(qry)
+            try:
+                db.ex(qry)
+            except Exception, e:
+                print e
             return True

@@ -54,20 +54,23 @@ class DriverMysql(object):
         values = []
         for column, value in items.items():
             columns.append(column)
-            values.append(str(value))
+            values.append(value)
         column_sql = ''
         for column in columns:
             column_sql = column_sql + "`%s`," % column
         column_sql = column_sql.rstrip(column_sql[-1:])
         value_sql = ''
         for value in values:
-            value_sql = value_sql + '"%s",' % self.escape_string(value)
+            if value:
+                value_sql += '"%s",' % self.escape_string(value)
+            else:
+                value_sql += "NULL,"
         value_sql = value_sql.rstrip(value_sql[-1:])
 
         sql = """INSERT INTO %s (%s) VALUES(%s);""" % (
             table, column_sql, value_sql)
         self.ex(sql)
-        return True
+        return sql
 
     def update(self, table, items, where, limit=1):
         table = self.__format_db_table_sql(table)
@@ -86,7 +89,7 @@ class DriverMysql(object):
         return sql
 
     def escape_string(self, string):
-        return mdb.escape_string(string)
+        return self.conn.escape_string(string)
 
     def alt_con(self, host, dbuser, dbpass, dbname=None, port=3306):
         self.host = host

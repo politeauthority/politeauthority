@@ -11,6 +11,8 @@
         meta_info['entity_type'] = 'company'
         m.save(meta_info)
 
+
+
     Basic Load Example for a class
 
     from politeauthority.meta import Meta
@@ -24,8 +26,8 @@
         self.meta = m.load_meta(info)
 
     SQL Table
-    CREATE TABLE `your_schema`.`meta` (
-      `meta_id`        BIGINT(20) unsigned NOT NULL AUTO_INCREMENT,
+    CREATE TABLE `meta` (
+      `id`             BIGINT(20) unsigned NOT NULL AUTO_INCREMENT,
       `meta_key`       VARCHAR(50) DEFAULT NULL,
       `entity_type`    VARCHAR(10) DEFAULT NULL,
       `entity_id`      VARCHAR(255) DEFAULT NULL,
@@ -36,10 +38,10 @@
       `val_text`       TEXT DEFAULT NULL,
       `val_datetime`   DATETIME DEFAULT NULL,
       `ts_created`     DATETIME DEFAULT CURRENT_TIMESTAMP,
-      `ts_update` DATETIME ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (`meta_id`),
-      UNIQUE KEY `unique_index` (`mata_key`,`entity_type`,`entity_id`)
-    )
+      `ts_update`      DATETIME ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `unique_index` (`meta_key`, `entity_type`, `entity_id`)
+    );
 """
 import cPickle
 
@@ -92,7 +94,7 @@ class Meta(object):
         elif meta['type'] == 'text':
             info['val_text'] = db.escape_string(meta['value'])
         elif meta['type'] == 'datetime':
-            info['val_datetime'] = db.escape_string(meta['value'])
+            info['val_datetime'] = meta['value']
         elif meta['type'] == 'list':
             if isinstance(meta['value'], list):
                 value = '","'.join(meta['value'])
@@ -122,7 +124,7 @@ class Meta(object):
                     %(val_int)s, %(val_varchar)s, %(val_text)s, %(val_datetime)s, NOW())
                 ON DUPLICATE KEY UPDATE `meta_type`=%(meta_type)s, `val_decimal`=%(val_decimal)s,
                     `val_int`=%(val_int)s, `val_varchar`=%(val_varchar)s, `val_text`=%(val_text)s,
-                    `val_datetime`=%(val_datetime)s"""
+                    `val_datetime`=%(val_datetime)s;"""
         db.ex(qry % info)
 
     def load_meta(self, meta, keys=[]):
@@ -172,7 +174,7 @@ class Meta(object):
                     ret_value = cPickle.loads(ret_value)
 
             entity_meta[m_key] = {
-                'meta_id': m[0],
+                'id': m[0],
                 'meta_key': m_key,
                 'entity_type': m[2],
                 'value': ret_value,

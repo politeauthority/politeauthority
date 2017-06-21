@@ -2,26 +2,28 @@
     Company Model
 
     COMPANY TABLE
-    CREATE TABLE `companies` (
-      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-      `symbol` varchar(10) DEFAULT NULL,
-      `name` varchar(255) DEFAULT NULL,
-      `last_sale` decimal(12,2) DEFAULT NULL,
-      `market_cap` decimal(20,2) DEFAULT NULL,
-      `ipo_year` varchar(10) DEFAULT NULL,
-      `sector` varchar(255) DEFAULT NULL,
-      `industry` varchar(255) DEFAULT NULL,
-      `exchange` varchar(50) DEFAULT NULL,
-      `last_update_ts` datetime DEFAULT NULL,
-      `high_52_weeks` decimal(20,2) DEFAULT NULL,
-      `low_52_weeks` decimal(20,2) DEFAULT NULL,
-      `run_company` tinyint(1) DEFAULT NULL,
-      PRIMARY KEY (`id`)
+    CREATE TABLE `stocks`.`companies` (
+      `id`                  bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `symbol`              varchar(10) DEFAULT NULL,
+      `name`                varchar(255) DEFAULT NULL,
+      `price`               decimal(20,4) DEFAULT NULL,
+      `market_cap`          decimal(20,4) DEFAULT NULL,
+      `ipo_year`            varchar(10) DEFAULT NULL,
+      `sector`              varchar(255) DEFAULT NULL,
+      `industry`            varchar(255) DEFAULT NULL,
+      `exchange`            varchar(50) DEFAULT NULL,
+      `high_52_weeks`       decimal(20,4) DEFAULT NULL,
+      `high_52_weeks_date`  DATETIME DEFAULT NULL,
+      `low_52_weeks`        decimal(20,4) DEFAULT NULL,
+      `low_52_weeks_date`   DATETIME DEFAULT NULL,
+      `run_company`         tinyint(1) DEFAULT NULL,
+      `ts_update`           datetime DEFAULT NULL,
+      PRIMARY KEY (`id`),
+      KEY `symbol` (`symbol`)
     );
 
 
 """
-from datetime import datetime
 
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
@@ -36,7 +38,7 @@ class Company(object):
         self.id = None
         self.symbol = None
         self.name = None
-        self.last_sale = None
+        self.price = None
         self.market_cap = None
         self.ipo_year = None
         self.sector = None
@@ -44,8 +46,14 @@ class Company(object):
         self.exchange = None
         self.last_update = None
         self.high_52_weeks = None
+        self.high_52_weeks_date = None
         self.low_52_weeks = None
+        self.low_52_weeks_date = None
         self.run_company = None
+        self.ts_update = None
+
+    def __repr__(self):
+        return '<Company %r, %r>' % (self.symbol, self.name)
 
     def get_company_by_id(self, company_id):
         self.id = company_id
@@ -64,61 +72,42 @@ class Company(object):
         self.id = company_row[0]
         self.symbol = company_row[1]
         self.name = company_row[2]
-        self.last_sale = company_row[3]
-        self.market_cap = company_row[4]
-        self.ipo_year = company_row[5]
-        self.sector = company_row[6]
-        self.industry = company_row[7]
-        self.exchange = company_row[8]
-        self.last_update = company_row[9]
-        self.high_52_weeks = company_row[10]
-        self.low_52_weeks = company_row[11]
-        self.run_company = company_row[12]
+        self.price = company_row[3]
+        self.market_cap = None
+        self.ipo_year = None
+        self.sector = None
+        self.industry = None
+        self.exchange = None
+        self.last_update = None
+        self.high_52_weeks = None
+        self.high_52_weeks_date = None
+        self.low_52_weeks = None
+        self.low_52_weeks_date = None
+        self.run_company = None
+        self.ts_update = None
 
     def save(self, save_none_vals=[]):
+        if self.price in ['n/a']:
+            self.price = None
+
         if not self.id:
-            print 'Cant save the object not enough info'
-            return False
-        set_sql = ''
-        if self.symbol:
-            set_sql += """`%s`='%s', """ % ("symbol", self.symbol)
-        if self.name:
-            set_sql += """`%s`='%s', """ % ("name", self.name)
-        if self.last_sale:
-            set_sql += """`%s`='%s', """ % ("last_sale", self.last_sale)
-        if self.market_cap:
-            set_sql += """`%s`='%s', """ % ("market_cap", self.market_cap)
-        if self.ipo_year:
-            set_sql += """`%s`='%s', """ % ("ipo_year", self.ipo_year)
-        if self.sector:
-            set_sql += """`%s`='%s', """ % ("sector", self.sector)
-        if self.industry:
-            set_sql += """`%s`='%s', """ % ("industry", self.industry)
-        if self.exchange:
-            set_sql += """`%s`='%s', """ % ("exchange", self.exchange)
-        if self.high_52_weeks:
-            set_sql += """`%s`='%s', """ % ("high_52_weeks", self.high_52_weeks)
-        if self.low_52_weeks:
-            set_sql += """`%s`='%s', """ % ("low_52_weeks", self.low_52_weeks)
-        if self.run_company:
-            set_sql += """`%s`='%s', """ % ("run_company", self.run_company)
+            data = {
+                'symbol': self.symbol,
+                'name': self.name,
+                'price': self.price,
+                'market_cap': self.market_cap,
+                'ipo_year': self.ipo_year,
+                'sector': self.sector,
+                'industry': self.industry,
+                'exchange': self.exchange,
+                'high_52_weeks': self.high_52_weeks,
+                'high_52_weeks_date': self.high_52_weeks_date,
+                'low_52_weeks': self.low_52_weeks,
+                'low_52_weeks_date': self.low_52_weeks_date,
+                'run_company': self.run_company,
+            }
 
-        if not set_sql:
-            return False
-        if set_sql:
-            set_sql += '`last_update_ts`="%s", ' % datetime.now()
-            set_sql = set_sql[:-2]
-
-        sql = """UPDATE `stocks`.`companies`
-                 SET
-                 %s
-                 WHERE
-                    `id`=%s; """ % (
-            set_sql,
-            self.id
-        )
-        db.ex(sql)
-        return True
+            db.insert('stocks.companies', data)
 
     def load_meta(self):
         m = Meta()

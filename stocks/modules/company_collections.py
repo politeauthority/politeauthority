@@ -50,19 +50,18 @@ def get_companies_for_wiki_seach(limit=10):
 
 
 def get_companies_wo_meta(meta, limit=10):
-    qry = """SELECT c.`id`
-         FROM `stocks`.`companies` c
-         LEFT JOIN `stocks`.`meta` m
-            ON
-                c.id = m.entity_id
-                AND
-                m.entity_type="company"
-                AND
-                m.meta_key!="%s"
-        WHERE
-            1=1
-        ORDER BY c.last_update_ts ASC
-        LIMIT %s""" % (meta, limit)
+    qry = """
+             SELECT c.id
+             FROM `stocks`.`companies` c
+             LEFT JOIN (SELECT *
+                        FROM `stocks`.`meta` m
+                        WHERE m.`meta_key` = "%(meta_key)s") x
+                ON c.`id` = x.`entity_id`
+            WHERE x.`entity_id` is NULL
+            LIMIT %(limit)s;
+          """ % {
+        'meta_key': meta,
+        'limit': limit}
     return __qry_to_companies(qry)
 
 

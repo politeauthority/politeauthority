@@ -115,6 +115,8 @@ if __name__ == '__main__':
         stock_delta_percent = common.get_percentage(value_in_stock - cash_in_stock, value_in_stock)
         print '\tDays in\t %s' % days_in_stock
         print '\tCash in Stock\t %s' % format_curreny(cash_in_stock, False)
+        if info['active_shares'] > 1:
+            print '\t\t Avg Share Price' % ()
         print '\tValue in Stock\t %s' % format_curreny(value_in_stock, False)
         print stock_delta_percent
         print ''
