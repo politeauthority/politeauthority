@@ -98,9 +98,9 @@ class Meta(object):
         elif meta['meta_type'] == 'int':
             meta['val_int'] = meta['value']
         elif meta['meta_type'] == 'varchar':
-            meta['val_varchar'] = meta['value']
+            meta['val_varchar'] = db.escape_string(meta['value'])
         elif meta['meta_type'] == 'text':
-            meta['val_text'] = meta['value']
+            meta['val_text'] = db.escape_string(meta['value'])
         elif meta['meta_type'] == 'datetime':
             meta['val_datetime'] = meta['value']
         elif meta['meta_type'] == 'list':

@@ -65,6 +65,7 @@ def get_one_year():
         f = open(year_file, 'rb')
         reader = csv.reader(f)
         c = 0
+        print 'Proccessing %s' % company.name
         for row in reader:
             c += 1
             if c == 1:
@@ -154,9 +155,12 @@ def get_company_wikipedia_url():
     for c in companies:
         # g_search = "%s wikipedia" % c.name
         if 'wikipedia_url_fail' in c.meta:
-            print c.meta
             print 'found a already failed'
+            meta_fail = c.meta['wikipedia_url_fail']
+            meta_fail['value'] = meta_fail['value'] + 1
+            c.save_meta(meta_fail)
             c.save()
+            exit()
             continue
 
         print c.name
@@ -166,11 +170,23 @@ def get_company_wikipedia_url():
         query_term = common.remove_punctuation(query_term)
         query_term = query_term.strip()
         print query_term
+        meta_wiki_search_e = {
+            'meta_key': 'wiki_search_error',
+            'entity_id': c.id,
+            'meta_type': 'text',
+        }
         try:
             wiki = wikipedia.page(query_term)
         except wikipedia.exceptions.PageError, e:
+            meta_wiki_search_e['value'] = e
+            c.save_meta(meta_wiki_search_e)
             print 'Could not Find wiki artical for %s, Error: %s' % (c.name, e)
             print ''
+            continue
+        except wikipedia.exceptions.DisambiguationError, e:
+            meta_wiki_search_e['value'] = e
+            c.save_meta(meta_wiki_search_e)
+            print e
             continue
         wiki_url = common.remove_punctuation(wiki.url[30:]).replace('_', ' ')
 

@@ -30,6 +30,7 @@ from politeauthority.driver_mysql import DriverMysql
 from politeauthority.meta import Meta
 
 db = DriverMysql(environmental.mysql_conf())
+company_table = 'stocks.companies'
 m = Meta()
 m.schema = 'stocks'
 
@@ -109,8 +110,37 @@ class Company(object):
                 'low_52_weeks_date': self.low_52_weeks_date,
                 'run_company': self.run_company,
             }
-
-            db.insert('stocks.companies', data)
+            db.insert(company_table, data)
+        else:
+            data = {}
+            data['id'] = self.id
+            if self.symbol:
+                data['symbol'] = self.symbol
+            if self.name:
+                data['name'] = self.name
+            if self.price:
+                data['price'] = self.price
+            if self.market_cap:
+                data['market_cap'] = self.market_cap
+            if self.ipo_year:
+                data['ipo_year'] = self.ipo_year
+            if self.sector:
+                data['sector'] = self.sector
+            if self.industry:
+                data['industry'] = self.industry
+            if self.exchange:
+                data['exchange'] = self.exchange
+            if self.high_52_weeks:
+                data['high_52_weeks'] = self.high_52_weeks
+            if self.high_52_weeks_date:
+                data['high_52_weeks_date'] = self.high_52_weeks_date
+            if self.low_52_weeks:
+                data['low_52_weeks'] = self.low_52_weeks
+            if self.low_52_weeks_date:
+                data['low_52_weeks_date'] = self.low_52_weeks_date
+            if self.run_company:
+                data['run_company'] = self.run_company
+            db.iodku(company_table, data)
 
     def load(self):
         self.load_meta()
