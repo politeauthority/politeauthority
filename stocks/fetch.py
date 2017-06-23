@@ -24,7 +24,6 @@ import requests
 from datetime import datetime
 from datetime import timedelta
 import csv
-from yahoo_finance import Share
 import wikipedia
 
 from politeauthority import common
@@ -33,8 +32,8 @@ from politeauthority.driver_mysql import DriverMysql
 
 from modules.company import Company
 from modules.quote import Quote
+from modules.stocky import Stocky
 from modules import company_collections
-
 from one_fetch import base_companies_nyse_nasdaq
 
 INTERSTING_SYMBOLS = ['YHOO', 'VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
@@ -149,7 +148,7 @@ def update_data_from_yahoo(only_interesting=False):
 
 
 def get_company_wikipedia_url():
-    companies = company_collections.get_companies_wo_meta('wikipedia_url', 100)
+    companies = company_collections.wo_meta('wikipedia_url', 100)
     # companies = db.ex(qry)
 
     for c in companies:
@@ -264,40 +263,15 @@ def show_company_wikipedia_url():
 
 
 def daily():
-    print 'do daily shit'
+    print 'Daily'
     # get all companies needing daily
-    companies = company_collections.wo_meta('daily', 50)
+    companies = company_collections.wo_meta('daily', 5)
     total_companies = len(companies)
     count = 0
     for c in companies:
         count += 1
         print '%s of %s %s' % (count, total_companies, c.name)
-
-        try:
-            share = Share(c.symbol)
-        except Exception, e:
-            print e
-            print "Couldn't Fetch Data for %s" % c.name
-            continue
-        c.price = share.get_price()
-        q = Quote()
-        q.company_id = c.id
-        q.open = share.data_set['Open']
-        q.close = share.get_price()
-        q.high = share.get_days_high()
-        q.low = share.get_days_low()
-        q.volume = share.data_set['Volume']
-        q.date = common.utc_to_mountain(share.data_set['LastTradeDateTimeUTC'])
-        q.save()
-        meta = {
-            'meta_key': 'daily',
-            'entity_id': c.id,
-            'meta_type': 'datetime',
-            'value': q.date
-        }
-        c.save_meta(meta)
-        c.save()
-        print ''
+        share = Stocky().process(c)
 
 
 if __name__ == '__main__':

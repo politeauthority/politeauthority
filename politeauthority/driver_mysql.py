@@ -140,8 +140,9 @@ class DriverMysql(object):
         columns = []
         values = []
         for column, value in items.items():
-            columns.append(column)
-            values.append(value)
+            if value:
+                columns.append(column)
+                values.append(value)
         return {'columns': columns, 'values': values}
 
     def __sql_col(self, cols):
@@ -166,6 +167,8 @@ class DriverMysql(object):
             if isinstance(v, int) or isinstance(v, float):
                 sql += '%s, ' % v
             elif isinstance(v, datetime):
+                if v and len(str(v)) > 19:
+                    v = str(v)[:19]
                 sql += '"%s", ' % v
             else:
                 sql += '"%s", ' % self.escape_string(v)
