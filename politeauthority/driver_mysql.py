@@ -185,7 +185,7 @@ class DriverMysql(object):
         return sql[:-2]
 
     def escape_string(self, string):
-        return self.conn.escape_string(str(string))
+        return mdb.escape_string(str(string))
 
     def alt_con(self, host, dbuser, dbpass, dbname=None, port=3306):
         self.host = host

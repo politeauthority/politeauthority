@@ -49,7 +49,7 @@ def get_one_year():
     total = 1000
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = company_collections.get_companies_wo_meta('one_year', total)
+    companies = company_collections.wo_meta('one_year', total)
     count = 0
     for company in companies:
         count += 1
@@ -249,7 +249,7 @@ def get_company_wikipedia_url():
 
 
 def show_company_wikipedia_url():
-    companies = company_collections.get_companies_by_meta('wikipedia_url', 1)
+    companies = company_collections.by_meta('wikipedia_url', 1)
     # companies = db.ex(qry)
     if len(companies) == 0:
         print 'No companies found with wikipedia_url'
@@ -265,6 +265,39 @@ def show_company_wikipedia_url():
 
 def daily():
     print 'do daily shit'
+    # get all companies needing daily
+    companies = company_collections.wo_meta('daily', 50)
+    total_companies = len(companies)
+    count = 0
+    for c in companies:
+        count += 1
+        print '%s of %s %s' % (count, total_companies, c.name)
+
+        try:
+            share = Share(c.symbol)
+        except Exception, e:
+            print e
+            print "Couldn't Fetch Data for %s" % c.name
+            continue
+        c.price = share.get_price()
+        q = Quote()
+        q.company_id = c.id
+        q.open = share.data_set['Open']
+        q.close = share.get_price()
+        q.high = share.get_days_high()
+        q.low = share.get_days_low()
+        q.volume = share.data_set['Volume']
+        q.date = common.utc_to_mountain(share.data_set['LastTradeDateTimeUTC'])
+        q.save()
+        meta = {
+            'meta_key': 'daily',
+            'entity_id': c.id,
+            'meta_type': 'datetime',
+            'value': q.date
+        }
+        c.save_meta(meta)
+        c.save()
+        print ''
 
 
 if __name__ == '__main__':
@@ -272,10 +305,8 @@ if __name__ == '__main__':
     if args['--build_from_nasdaq']:
         base_companies_nyse_nasdaq.run()
     if args['--daily']:
-        update_data_from_yahoo()
+        daily()
     if args['--one_year']:
         get_one_year()
-    if args['--get_interesting']:
-        update_data_from_yahoo(only_interesting=True)
     if args['--get_wiki']:
         get_company_wikipedia_url()

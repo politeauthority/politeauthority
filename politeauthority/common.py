@@ -2,6 +2,8 @@ import os
 import subprocess
 from difflib import SequenceMatcher
 import string
+from dateutil import tz
+import dateutil.parser
 
 
 def file_safe_date(the_date):
@@ -79,5 +81,11 @@ def remove_punctuation(the_string, exceptions=''):
     if exceptions:
         punc = punc.translate(None, exceptions)
     return the_string.translate(None, punc)
+
+
+def utc_to_mountain(utc_time):
+    if isinstance(utc_time, str):
+        utc_time = dateutil.parser.parse(utc_time)
+    return utc_time.astimezone(tz.gettz('America/Denver'))
 
 # End File politeauthority/politeauthority/common.py

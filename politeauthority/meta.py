@@ -46,7 +46,7 @@
       `val_text`       TEXT DEFAULT NULL,
       `val_datetime`   DATETIME DEFAULT NULL,
       `ts_created`     DATETIME DEFAULT CURRENT_TIMESTAMP,
-      `ts_update`      DATETIME ON UPDATE CURRENT_TIMESTAMP,
+      `ts_update`      DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (`id`),
       UNIQUE KEY `unique_index` (`meta_key`, `entity_type`, `entity_id`)
     );
@@ -103,6 +103,8 @@ class Meta(object):
             meta['val_text'] = db.escape_string(meta['value'])
         elif meta['meta_type'] == 'datetime':
             meta['val_datetime'] = meta['value']
+            if meta['val_datetime'] and len(str(meta['val_datetime'])) > 19:
+                meta['val_datetime'] = str(meta['val_datetime'])[:19]
         elif meta['meta_type'] == 'list':
             if isinstance(meta['value'], list):
                 value = '"%s"' % '", "'.join(meta['value'])

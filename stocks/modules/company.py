@@ -3,21 +3,22 @@
 
     COMPANY TABLE
     CREATE TABLE `stocks`.`companies` (
-      `id`                  bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-      `symbol`              varchar(10) DEFAULT NULL,
-      `name`                varchar(255) DEFAULT NULL,
-      `price`               decimal(20,4) DEFAULT NULL,
-      `market_cap`          decimal(20,4) DEFAULT NULL,
-      `ipo_year`            varchar(10) DEFAULT NULL,
-      `sector`              varchar(255) DEFAULT NULL,
-      `industry`            varchar(255) DEFAULT NULL,
-      `exchange`            varchar(50) DEFAULT NULL,
-      `high_52_weeks`       decimal(20,4) DEFAULT NULL,
+      `id`                  BIGINT(20) unsigned NOT NULL AUTO_INCREMENT,
+      `symbol`              VARCHAR(10) DEFAULT NULL,
+      `name`                VARCHAR(255) DEFAULT NULL,
+      `price`               DECIMAL(20,4) DEFAULT NULL,
+      `market_cap`          DECIMAL(20,4) DEFAULT NULL,
+      `ipo_year`            VARCHAR(10) DEFAULT NULL,
+      `sector`              VARCHAR(255) DEFAULT NULL,
+      `industry`            VARCHAR(255) DEFAULT NULL,
+      `exchange`            VARCHAR(50) DEFAULT NULL,
+      `high_52_weeks`       DECIMAL(20,4) DEFAULT NULL,
       `high_52_weeks_date`  DATETIME DEFAULT NULL,
-      `low_52_weeks`        decimal(20,4) DEFAULT NULL,
+      `low_52_weeks`        DECIMAL(20,4) DEFAULT NULL,
       `low_52_weeks_date`   DATETIME DEFAULT NULL,
-      `run_company`         tinyint(1) DEFAULT NULL,
-      `ts_update`           datetime DEFAULT NULL,
+      `run_company`         TINYINT(1) DEFAULT NULL,
+      `ts_created`          DATETIME DEFAULT CURRENT_TIMESTAMP,
+      `ts_update`           DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (`id`),
       KEY `symbol` (`symbol`)
     );
@@ -93,54 +94,22 @@ class Company(object):
     def save(self, save_none_vals=[]):
         if self.price in ['n/a']:
             self.price = None
-
-        if not self.id:
-            data = {
-                'symbol': self.symbol,
-                'name': self.name,
-                'price': self.price,
-                'market_cap': self.market_cap,
-                'ipo_year': self.ipo_year,
-                'sector': self.sector,
-                'industry': self.industry,
-                'exchange': self.exchange,
-                'high_52_weeks': self.high_52_weeks,
-                'high_52_weeks_date': self.high_52_weeks_date,
-                'low_52_weeks': self.low_52_weeks,
-                'low_52_weeks_date': self.low_52_weeks_date,
-                'run_company': self.run_company,
-            }
-            db.insert(company_table, data)
-        else:
-            data = {}
-            data['id'] = self.id
-            if self.symbol:
-                data['symbol'] = self.symbol
-            if self.name:
-                data['name'] = self.name
-            if self.price:
-                data['price'] = self.price
-            if self.market_cap:
-                data['market_cap'] = self.market_cap
-            if self.ipo_year:
-                data['ipo_year'] = self.ipo_year
-            if self.sector:
-                data['sector'] = self.sector
-            if self.industry:
-                data['industry'] = self.industry
-            if self.exchange:
-                data['exchange'] = self.exchange
-            if self.high_52_weeks:
-                data['high_52_weeks'] = self.high_52_weeks
-            if self.high_52_weeks_date:
-                data['high_52_weeks_date'] = self.high_52_weeks_date
-            if self.low_52_weeks:
-                data['low_52_weeks'] = self.low_52_weeks
-            if self.low_52_weeks_date:
-                data['low_52_weeks_date'] = self.low_52_weeks_date
-            if self.run_company:
-                data['run_company'] = self.run_company
-            db.iodku(company_table, data)
+        data = {
+            'symbol': self.symbol,
+            'name': self.name,
+            'price': self.price,
+            'market_cap': self.market_cap,
+            'ipo_year': self.ipo_year,
+            'sector': self.sector,
+            'industry': self.industry,
+            'exchange': self.exchange,
+            'high_52_weeks': self.high_52_weeks,
+            'high_52_weeks_date': self.high_52_weeks_date,
+            'low_52_weeks': self.low_52_weeks,
+            'low_52_weeks_date': self.low_52_weeks_date,
+            'run_company': self.run_company,
+        }
+        db.iodku(company_table, data)
 
     def load(self):
         self.load_meta()

@@ -11,17 +11,18 @@
         `low` decimal(20,4) DEFAULT NULL,
         `volume` bigint(20) DEFAULT NULL,
         `date` datetime DEFAULT NULL,
+        `ts_created`          DATETIME DEFAULT CURRENT_TIMESTAMP,
+        `ts_update`           DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
         UNIQUE KEY `unique_index` (`company_id`, `date`)
     );
 
 """
-from datetime import datetime
-
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
 
 db = DriverMysql(environmental.mysql_conf())
+company_table = 'stocks.quotes'
 
 
 class Quote(object):
@@ -62,54 +63,16 @@ class Quote(object):
         self.date = quote_row[7]
 
     def save(self):
-        if not self.id:
-            if not self.date:
-                self.date = datetime.now()
-            insert_fields = []
-            insert_vals = []
-            insert_fields.append('company_id')
-            insert_vals.append(self.company_id)
-            if self.open:
-                insert_fields.append('open')
-                insert_vals.append(self.open)
-            if self.close:
-                insert_fields.append('close')
-                insert_vals.append(self.close)
-            if self.high:
-                insert_fields.append('high')
-                insert_vals.append(self.high)
-            if self.high:
-                insert_fields.append('low')
-                insert_vals.append(self.low)
-            if self.volume:
-                insert_fields.append('volume')
-                insert_vals.append(self.volume)
-            if self.date:
-                insert_fields.append('date')
-                insert_vals.append(self.date)
+        data = {
+            'id': self.id,
+            'company_id': self.company_id,
+            'open': self.open,
+            'close': self.close,
+            'high': self.high,
+            'low': self.low,
+            'volume': self.volume,
+            'date': self.date,
+        }
+        db.iodku(company_table, data)
 
-            if len(insert_fields) == 0:
-                return False
-
-            ins_f = ''
-            for f in insert_fields:
-                ins_f += """`%s`, """ % f
-            ins_f = ins_f[:-2]
-
-            ins_v = ''
-            for f in insert_vals:
-                ins_v += """"%s", """"" % f
-
-            ins_v = ins_v[:-2]
-            qry = """INSERT INTO `stocks`.`quotes`
-                     (%s)
-                     VALUES
-                     (%s);""" % (
-                ins_f,
-                ins_v
-            )
-            try:
-                db.ex(qry)
-            except Exception, e:
-                print e
-            return True
+# End File:

@@ -21,17 +21,46 @@ SELECT DISTINCT (`sector`), count(*)
     ORDER BY 2;
 
 
-SELECT c.name, m.meta_type, m.meta_value, m.val_varchar 
+SELECT c.name, m.meta_key, m.val_varchar 
     FROM stocks.companies c
     JOIN stocks.meta m
     ON c.id=m.entity_id AND m.entity_type='company';
 
 
-SELECT c.name, c.sector, m.meta_type,  m.val_varchar 
+-- COMPANIES WITH WIKI URL
+SELECT c.name, c.sector,  m.val_text, m.ts_update
     FROM stocks.companies c
         JOIN stocks.meta m
             ON c.id=m.entity_id AND m.entity_type='company'
     WHERE
-        m.meta_key = 'wikipedia_url';
+        m.meta_key = 'wikipedia_url'
+    ORDER BY m.ts_update DESC;
 
-select * from stocks.meta;
+-- COMPANIES WITH WIKI SEARCH ERRORS
+
+SELECT c.name, m.val_text, m.ts_update
+    FROM stocks.companies c
+        JOIN stocks.meta m
+            ON c.id=m.entity_id AND m.entity_type='company'
+    WHERE
+        m.meta_key = 'wikipedia_search_error'
+    ORDER BY m.ts_update DESC;
+
+
+-- Companies with high close avg price, min price and max close
+select c.name, AVG(q.close), MIN(q.close), MAX(q.close)
+    from companies c
+    join quotes q
+        on c.id = q.company_id
+    join meta m
+        ON 
+            m.entity_id = c.id AND
+            m.entity_type = 'company' AND
+    group by 1
+    order by 4 desc
+    limit 50;
+    
+
+-- different types and counts of meta
+select distinct meta_key, count(*) from meta group by 1 order by 2 desc;
+
