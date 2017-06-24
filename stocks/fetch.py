@@ -265,7 +265,7 @@ def show_company_wikipedia_url():
 def daily():
     print 'Daily'
     # get all companies needing daily
-    companies = company_collections.wo_meta('daily', 5)
+    companies = company_collections.wo_meta('daily', 50)
     total_companies = len(companies)
     count = 0
     for c in companies:

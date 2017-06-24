@@ -71,7 +71,7 @@ class Quote(object):
             'high': self.high,
             'low': self.low,
             'volume': self.volume,
-            'date': self.date,
+            'date': db.safe_date(self.date),
         }
         db.iodku(company_table, data)
 

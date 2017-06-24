@@ -25,6 +25,20 @@ class Stocky(object):
             print 'ERROR: No Trade Date'
             self.__update_error(company)
             return False
+        if 'DividendShare' in share.data_set:
+            divy = {
+                'DividendShare': share.data_set['DividendShare'],
+                'DividendYield': share.data_set['DividendYield'],
+                'DividendPayDate': share.data_set['DividendPayDate'],
+                'ExDividendDate': share.data_set['ExDividendDate'],
+            }
+            div_m = {
+                'meta_key': 'dividend_stock',
+                'meta_type': 'pickle',
+                'value': divy,
+            }
+            print 'Saved Dividend stock'
+            company.save_meta(div_m)
         q = Quote()
         q.company_id = company.id
         q.open = share.data_set['Open']
@@ -33,7 +47,6 @@ class Stocky(object):
         q.low = share.get_days_low()
         q.volume = share.data_set['Volume']
         q.date = common.utc_to_mountain(share.data_set['LastTradeDateTimeUTC'])
-        print 'Quote: %s' % q
         q.save()
         meta = {
             'meta_key': 'daily',
@@ -52,7 +65,6 @@ class Stocky(object):
             'meta_type': 'int',
             'value': 1,
         }
-        print company.meta
         if 'yahoo_error' in company.meta:
             m['value'] += m['value'] + 1
         company.save_meta(m)

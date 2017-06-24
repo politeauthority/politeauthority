@@ -26,13 +26,18 @@ def wo_meta(meta, limit=10):
              FROM `stocks`.`companies` c
              LEFT JOIN (SELECT *
                         FROM `stocks`.`meta` m
-                        WHERE m.`meta_key` = "%(meta_key)s") x
+                        WHERE 
+                            m.`meta_key` != "%(meta_key)s" AND
+                            m.`entity_type` = "company"
+                        LIMIT 1) x
                 ON c.`id` = x.`entity_id`
             WHERE x.`entity_id` is NULL
+            ORDER BY c.`ts_update` ASC
             LIMIT %(limit)s;
           """ % {
         'meta_key': meta,
         'limit': limit}
+    print qry
     return __qry_to_companies(qry)
 
 

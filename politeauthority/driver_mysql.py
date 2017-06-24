@@ -167,8 +167,7 @@ class DriverMysql(object):
             if isinstance(v, int) or isinstance(v, float):
                 sql += '%s, ' % v
             elif isinstance(v, datetime):
-                if v and len(str(v)) > 19:
-                    v = str(v)[:19]
+                v = self.safe_date(v)
                 sql += '"%s", ' % v
             else:
                 sql += '"%s", ' % self.escape_string(v)
@@ -186,6 +185,11 @@ class DriverMysql(object):
         for x in range(0, len(cols)):
             sql += """`%s` = "%s", """ % (cols[x], vals[x])
         return sql[:-2]
+
+    def safe_date(self, date):
+        if len(str(date)) > 19:
+            return str(date)[:19]
+        return date
 
     def escape_string(self, string):
         return mdb.escape_string(str(string))
