@@ -148,18 +148,19 @@ def update_data_from_yahoo(only_interesting=False):
 
 
 def get_company_wikipedia_url():
-    companies = company_collections.wo_meta('wikipedia_url', 100)
+    companies = company_collections.get_companies_needing_wikipedia_url(500)
     # companies = db.ex(qry)
 
     for c in companies:
         # g_search = "%s wikipedia" % c.name
+        print c
+        c.load()
         if 'wikipedia_url_fail' in c.meta:
             print 'found a already failed'
             meta_fail = c.meta['wikipedia_url_fail']
             meta_fail['value'] = meta_fail['value'] + 1
             c.save_meta(meta_fail)
             c.save()
-            exit()
             continue
 
         print c.name
@@ -265,7 +266,7 @@ def show_company_wikipedia_url():
 def daily():
     print 'Daily'
     # get all companies needing daily
-    companies = company_collections.wo_meta('daily', 50)
+    companies = company_collections.get_companies_daily(7700)
     total_companies = len(companies)
     count = 0
     for c in companies:

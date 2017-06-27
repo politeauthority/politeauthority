@@ -1,9 +1,22 @@
+from datetime import datetime
+from datetime import timedelta
+
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
 
 from company import Company
 
 db = DriverMysql(environmental.mysql_conf())
+
+
+def get_recently_modified(page=1):
+    limit = 40
+    qry = """
+        SELECT `id`
+        FROM `stocks`.`companies`
+        ORDER BY `ts_update` DESC LIMIT %s OFFSET %s;
+        """ % (limit, (limit * page) - limit)
+    return __qry_to_companies(qry, False)
 
 
 def by_meta(meta_key, limit=10):
@@ -22,38 +35,68 @@ def by_meta(meta_key, limit=10):
 
 def wo_meta(meta, limit=10):
     qry = """
-             SELECT c.id
-             FROM `stocks`.`companies` c
-             LEFT JOIN (SELECT *
-                        FROM `stocks`.`meta` m
-                        WHERE
-                            m.`meta_key` != "%(meta_key)s" AND
-                            m.`entity_type` = "company"
-                        LIMIT 1) x
-                ON c.`id` = x.`entity_id`
-            WHERE x.`entity_id` is NULL
-            ORDER BY c.`ts_update` ASC
-            LIMIT %(limit)s;
-          """ % {
+        SELECT c.id
+        FROM `stocks`.`companies` c
+            LEFT JOIN `stocks`.`meta` m
+                ON
+                    c.`id` = m.`entity_id` AND
+                    m.`meta_key` = "%(meta_key)s"
+        WHERE
+            m.`meta_key` is NULL
+        ORDER BY c.`ts_update` ASC
+        LIMIT %(limit)s;
+    """ % {
         'meta_key': meta,
-        'limit': limit}
+        'limit': limit
+    }
+    print qry
+    return __qry_to_companies(qry, False)
+
+
+def get_companies_needing_wikipedia_url(limit=10):
+    qry = """
+        SELECT c.id as id, mm.val_int
+        FROM `stocks`.`companies` c
+            LEFT JOIN `stocks`.`meta` m
+                ON
+                    c.`id` = m.`entity_id` AND
+                    m.`meta_key` = "wikipedia_url"
+            LEFT JOIN `stocks`.`meta` mm
+                ON
+                    c.`id` = m.`entity_id` AND
+                    mm.`meta_key` = "wikipedia_url_fail"
+
+        WHERE
+            m.`meta_key` is NULL AND
+            (
+                mm.`val_int` is NULL OR
+                mm.`val_int` < 4
+            )
+        ORDER BY c.`ts_update` ASC
+        LIMIT %(limit)s;
+    """ % {
+        'limit': limit
+    }
     print qry
     return __qry_to_companies(qry, False)
 
 
 def get_companies_daily(limit, load_full=False):
+    mtn_market_close = datetime.now().replace(hour=14, minute=0, second=0)
+    print mtn_market_close
     qry = """
         SELECT c.`id`
-        FROM `stocks`.`companies` c
-        JOIN `stocks`.`meta` m
-            ON
-            c.id = m.entity_id AND
-            m.entity_type="company"
+            FROM `stocks`.`companies` c
+            JOIN `stocks`.`meta` m
+                ON
+                c.id = m.entity_id AND
+                m.entity_type="company"
         WHERE
             `meta_key`="daily" AND
-            val_date >= '%s'"""
+            `val_datetime` <= '%s'""" % str(mtn_market_close)
     if limit:
-        qry += 'LIMIT %s' % limit
+        qry += ' LIMIT %s' % limit
+    print qry
     return __qry_to_companies(qry, load_full)
 
 
@@ -76,8 +119,8 @@ def disc_new_companies():
 def __qry_to_companies(qry, load_full):
     res = db.ex(qry)
     companies = []
-    for c_id in res:
+    for co in res:
         com = Company()
-        com.get_company_by_id(c_id, load_full)
+        com.get_company_by_id(co[0], load_full)
         companies.append(com)
     return companies
