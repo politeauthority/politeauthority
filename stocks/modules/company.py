@@ -59,7 +59,7 @@ class Company(object):
     def __repr__(self):
         return '<Company %r, %r>' % (self.symbol, self.name)
 
-    def get_company_by_id(self, company_id):
+    def get_company_by_id(self, company_id, full=True):
         self.id = company_id
         qry = """SELECT *
                  FROM `stocks`.`companies`
@@ -70,7 +70,23 @@ class Company(object):
         if len(company_row) <= 0:
             return None
         self.build_from_row(company_row[0])
-        self.load()
+        if full:
+            self.load()
+        return self
+
+    def get_by_symbol(self, symbol, full=True):
+        self.symbol = symbol
+        qry = """SELECT *
+                 FROM `stocks`.`companies`
+                 WHERE
+                    `symbol` = "%s";
+              """ % self.symbol
+        company_row = db.ex(qry)
+        if len(company_row) <= 0:
+            return None
+        self.build_from_row(company_row[0])
+        if full:
+            self.load()
         return self
 
     def build_from_row(self, company_row):
@@ -112,7 +128,16 @@ class Company(object):
         db.iodku(company_table, data)
 
     def load(self):
+        # self.load_quotes()
         self.load_meta()
+
+    def load_quotes(self, limit=31):
+        qry = """
+            SELECT * FROM `stocks`.`quotes`
+            WHERE `company_id` = %s
+            ORDER BY `date` DESC
+            LIMIT %s; """ % (self.id, limit)
+        self.quotes = db.ex(qry)
 
     def load_meta(self):
         info = {}

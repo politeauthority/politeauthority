@@ -56,6 +56,20 @@ def get_companies_daily(limit):
         qry += 'LIMIT %s' % limit
     return __qry_to_companies(qry)
 
+def disc_new_companies():
+    qry = """
+        SELECT c.id
+            FROM `stocks`.`companies` c
+            -- JOIN `stocks`.`meta` m
+            --     ON
+            --         c.id = m.entity_id AND
+            --         c.entity_type = 'company' AND
+            --         m`meta_key` = 'daily'
+            WHERE 
+                ipo_year IN ("2017", "2016")
+
+            ORDER BY price ASC;"""
+    return __qry_to_companies(qry)
 
 def __qry_to_companies(qry):
     res = db.ex(qry)

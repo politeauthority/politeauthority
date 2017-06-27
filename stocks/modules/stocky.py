@@ -18,7 +18,7 @@ class Stocky(object):
             share = Share(company.symbol)
         except Exception, e:
             print e
-            print "ERROR: Couldn't Fetch Data for %s" % c.name
+            print "ERROR: Couldn't Fetch Data for %s" % company.name
             self.__update_error(company)
             return False
         if 'LastTradeDateTimeUTC' not in share.data_set:
