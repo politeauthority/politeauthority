@@ -109,6 +109,8 @@ class Company(object):
     def save(self, save_none_vals=[]):
         if self.price in ['n/a']:
             self.price = None
+        if self.sector in ['n/a']:
+            self.sector = None
         data = {
             'symbol': self.symbol,
             'name': self.name,
@@ -124,7 +126,7 @@ class Company(object):
             'low_52_weeks_date': self.low_52_weeks_date,
             'run_company': self.run_company,
         }
-        print db.iodku(company_table, data)
+        db.iodku(company_table, data)
 
     def load(self):
         # self.load_quotes()
@@ -134,7 +136,7 @@ class Company(object):
         qry = """
             SELECT * FROM `stocks`.`quotes`
             WHERE `company_id` = %s
-            ORDER BY `date` DESC
+            ORDER BY `quote_date` DESC
             LIMIT %s; """ % (self.id, limit)
         self.quotes = db.ex(qry)
 

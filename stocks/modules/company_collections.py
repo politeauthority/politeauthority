@@ -9,6 +9,11 @@ from company import Company
 db = DriverMysql(environmental.mysql_conf())
 
 
+def get_count():
+    qry = """SELECT count(*) as c FROM `stocks`.`companies`;"""
+    return db.ex(qry)
+
+
 def get_recently_modified(page=1):
     limit = 40
     qry = """

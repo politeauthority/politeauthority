@@ -45,6 +45,11 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 download_path = os.path.join(environmental.get_temp_dir(), 'stocks')
 db = DriverMysql(environmental.mysql_conf())
 
+if environmental.build() == 'dev':
+    LIMIT = 100
+else:
+    LIMIT = 7800
+
 
 def get_one_year():
     total = 1000
@@ -294,7 +299,8 @@ def daily_updates():
         'daily_process',
         'datetime',
         '<=',
-        datetime.now().replace(hour=14, minute=0, second=0))
+        datetime.now().replace(hour=14, minute=0, second=0),
+        LIMIT)
     for company in companies:
         company.load()
         qry = """
@@ -313,7 +319,7 @@ def daily_updates():
             quote_dates.append(tt.tm_yday)
             print quote_date
             print "%s : %s" % (q[0], q[1])
-        sorted(quote_dates)
+        quote_dates = sorted(quote_dates)
         print quote_dates
         print company.name
         print company.ts_update
