@@ -14,6 +14,7 @@ class Stocky(object):
     def process(self, company):
         """
         """
+        company.load()
         try:
             share = Share(company.symbol)
         except Exception, e:
