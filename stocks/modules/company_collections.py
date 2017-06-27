@@ -17,7 +17,7 @@ def by_meta(meta_key, limit=10):
     if limit:
         qry += 'LIMIT %s' % limit
 
-    return __qry_to_companies(qry)
+    return __qry_to_companies(qry, False)
 
 
 def wo_meta(meta, limit=10):
@@ -26,7 +26,7 @@ def wo_meta(meta, limit=10):
              FROM `stocks`.`companies` c
              LEFT JOIN (SELECT *
                         FROM `stocks`.`meta` m
-                        WHERE 
+                        WHERE
                             m.`meta_key` != "%(meta_key)s" AND
                             m.`entity_type` = "company"
                         LIMIT 1) x
@@ -38,10 +38,10 @@ def wo_meta(meta, limit=10):
         'meta_key': meta,
         'limit': limit}
     print qry
-    return __qry_to_companies(qry)
+    return __qry_to_companies(qry, False)
 
 
-def get_companies_daily(limit):
+def get_companies_daily(limit, load_full=False):
     qry = """
         SELECT c.`id`
         FROM `stocks`.`companies` c
@@ -54,7 +54,8 @@ def get_companies_daily(limit):
             val_date >= '%s'"""
     if limit:
         qry += 'LIMIT %s' % limit
-    return __qry_to_companies(qry)
+    return __qry_to_companies(qry, load_full)
+
 
 def disc_new_companies():
     qry = """
@@ -65,17 +66,18 @@ def disc_new_companies():
             --         c.id = m.entity_id AND
             --         c.entity_type = 'company' AND
             --         m`meta_key` = 'daily'
-            WHERE 
+            WHERE
                 ipo_year IN ("2017", "2016")
 
             ORDER BY price ASC;"""
     return __qry_to_companies(qry)
 
-def __qry_to_companies(qry):
+
+def __qry_to_companies(qry, load_full):
     res = db.ex(qry)
     companies = []
     for c_id in res:
         com = Company()
-        com.get_company_by_id(c_id)
+        com.get_company_by_id(c_id, load_full)
         companies.append(com)
     return companies
