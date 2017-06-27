@@ -33,7 +33,10 @@ def by_meta(meta_key, limit=10):
     return __qry_to_companies(qry, False)
 
 
-def wo_meta(meta, limit=10):
+def wo_meta(meta, meta_type=None, comparison=None, value=None, limit=10):
+    or_val_sql = ''
+    if meta_type and comparison and value:
+        or_val_sql = """OR (`val_%s` %s "%s") """ % (meta_type, comparison, value)
     qry = """
         SELECT c.id
         FROM `stocks`.`companies` c
@@ -43,10 +46,12 @@ def wo_meta(meta, limit=10):
                     m.`meta_key` = "%(meta_key)s"
         WHERE
             m.`meta_key` is NULL
+            %(or_val_sql)s
         ORDER BY c.`ts_update` ASC
         LIMIT %(limit)s;
     """ % {
         'meta_key': meta,
+        'or_val_sql': or_val_sql,
         'limit': limit
     }
     print qry

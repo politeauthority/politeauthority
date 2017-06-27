@@ -13,6 +13,7 @@ Options:
     --one_year            Backfill 1 year quote data from Google where we dont have
     --get_wiki            Get company wikipedia urls where we dont have them
     --daily               Runs after market close routines
+    --update              Run daily update
     -d --debug            Run the console at debug level
 
     markets open between 7:30am - 2pm MTN
@@ -34,6 +35,7 @@ from modules.company import Company
 from modules.quote import Quote
 from modules.stocky import Stocky
 from modules import company_collections
+from modules import quote_collections
 from one_fetch import base_companies_nyse_nasdaq
 
 INTERSTING_SYMBOLS = ['YHOO', 'VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
@@ -266,13 +268,56 @@ def show_company_wikipedia_url():
 def daily():
     print 'Daily'
     # get all companies needing daily
-    companies = company_collections.get_companies_daily(7700)
+    companies = company_collections.get_companies_daily(100)
     total_companies = len(companies)
     count = 0
+    errors = 0
     for c in companies:
         count += 1
         print '%s of %s %s' % (count, total_companies, c)
-        share = Stocky().process(c)
+        try:
+            share = Stocky().process(c)
+        except Exception, e:
+            errors += 1
+            print '\tError(%s): %s' % (errors, e)
+            if errors == 5:
+                print 'Hit 5 API Errors, quitting'
+                exit()
+        print '\t%s' % share.get_price()
+
+        print ''
+
+
+def daily_updates():
+    print 'Daily Updates'
+    companies = company_collections.wo_meta(
+        'daily_process',
+        'datetime',
+        '<=',
+        datetime.now().replace(hour=14, minute=0, second=0))
+    for company in companies:
+        company.load()
+        qry = """
+            SELECT distinct(left(`quote_date`, 10)) d, count(*) c
+            FROM `stocks`.`quotes`
+            WHERE
+                `company_id` = %s
+
+            GROUP BY 1;""" % company.id
+        print qry
+        quotes = db.ex(qry)
+        quote_dates = []
+        for q in quotes:
+            quote_date = datetime.strptime(q[0], '%Y-%m-%d')
+            tt = quote_date.timetuple()
+            quote_dates.append(tt.tm_yday)
+            print quote_date
+            print "%s : %s" % (q[0], q[1])
+        sorted(quote_dates)
+        print quote_dates
+        print company.name
+        print company.ts_update
+        print company.meta
         print ''
 
 
@@ -282,6 +327,8 @@ if __name__ == '__main__':
         base_companies_nyse_nasdaq.run()
     if args['--daily']:
         daily()
+    if args['--update']:
+        daily_updates()
     if args['--one_year']:
         get_one_year()
     if args['--get_wiki']:

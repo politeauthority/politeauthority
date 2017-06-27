@@ -23,7 +23,6 @@
       KEY `symbol` (`symbol`)
     );
 
-
 """
 
 from politeauthority import environmental
@@ -94,18 +93,18 @@ class Company(object):
         self.symbol = company_row[1]
         self.name = company_row[2]
         self.price = company_row[3]
-        self.market_cap = None
-        self.ipo_year = None
-        self.sector = None
-        self.industry = None
-        self.exchange = None
-        self.last_update = None
-        self.high_52_weeks = None
-        self.high_52_weeks_date = None
-        self.low_52_weeks = None
-        self.low_52_weeks_date = None
-        self.run_company = None
-        self.ts_update = None
+        self.market_cap = company_row[4]
+        self.ipo_year = company_row[5]
+        self.sector = company_row[6]
+        self.industry = company_row[7]
+        self.exchange = company_row[8]
+        self.high_52_weeks = company_row[9]
+        self.high_52_weeks_date = company_row[10]
+        self.low_52_weeks = company_row[11]
+        self.low_52_weeks_date = company_row[12]
+        self.run_company = company_row[13]
+        self.ts_created = company_row[14]
+        self.ts_update = company_row[15]
 
     def save(self, save_none_vals=[]):
         if self.price in ['n/a']:
@@ -125,7 +124,7 @@ class Company(object):
             'low_52_weeks_date': self.low_52_weeks_date,
             'run_company': self.run_company,
         }
-        db.iodku(company_table, data)
+        print db.iodku(company_table, data)
 
     def load(self):
         # self.load_quotes()
@@ -150,3 +149,5 @@ class Company(object):
         meta_info['entity_type'] = 'company'
         meta_info
         m.save(meta_info)
+
+# End File: stocks/modules/company.py

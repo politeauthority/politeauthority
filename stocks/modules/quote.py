@@ -3,16 +3,16 @@
 
     QUOTE TABLE
     CREATE TABLE `stocks`.`quotes` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `company_id` bigint(20) DEFAULT NULL,
-        `open` decimal(20,4) DEFAULT NULL,
-        `close` decimal(20,4) DEFAULT NULL,
-        `high` decimal(20,4) DEFAULT NULL,
-        `low` decimal(20,4) DEFAULT NULL,
-        `volume` bigint(20) DEFAULT NULL,
-        `date` datetime DEFAULT NULL,
-        `ts_created`          DATETIME DEFAULT CURRENT_TIMESTAMP,
-        `ts_update`           DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        `id`            BIGINT(20) unsigned NOT NULL AUTO_INCREMENT,
+        `company_id`    BIGINT(20) DEFAULT NULL,
+        `open`          DECIMAL(20,4) DEFAULT NULL,
+        `close`         DECIMAL(20,4) DEFAULT NULL,
+        `high`          DECIMAL(20,4) DEFAULT NULL,
+        `low`           DECIMAL(20,4) DEFAULT NULL,
+        `volume`        BIGINT(20) DEFAULT NULL,
+        `quote_date`    DATETIME DEFAULT NULL,
+        `ts_created`    DATETIME DEFAULT CURRENT_TIMESTAMP,
+        `ts_update`     DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
         UNIQUE KEY `unique_index` (`company_id`, `date`)
     );
@@ -71,7 +71,7 @@ class Quote(object):
             'high': self.high,
             'low': self.low,
             'volume': self.volume,
-            'date': db.safe_date(self.date),
+            'quote_date': db.safe_date(self.date),
         }
         db.iodku(company_table, data)
 
