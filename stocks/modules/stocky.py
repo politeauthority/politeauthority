@@ -26,20 +26,10 @@ class Stocky(object):
             print 'ERROR: No Trade Date'
             self.__update_error(company)
             return False
-        if 'DividendShare' in share.data_set:
-            divy = {
-                'DividendShare': share.data_set['DividendShare'],
-                'DividendYield': share.data_set['DividendYield'],
-                'DividendPayDate': share.data_set['DividendPayDate'],
-                'ExDividendDate': share.data_set['ExDividendDate'],
-            }
-            div_m = {
-                'meta_key': 'dividend_stock',
-                'meta_type': 'pickle',
-                'value': divy,
-            }
+        dividend_stock = self.check_divided_stock(share)
+        if dividend_stock:
             print 'Saved Dividend stock'
-            company.save_meta(div_m)
+            company.save_meta(dividend_stock)
         q = Quote()
         q.company_id = company.id
         q.open = share.data_set['Open']
@@ -59,6 +49,22 @@ class Stocky(object):
         company.save_meta(meta)
         company.save()
         return share
+
+    def check_divided_stock(self, share):
+        if 'DividendShare' in share.data_set:
+            if 'DividendShare' not in share.data_set:
+                div_m = {
+                    'meta_key': 'dividend_stock',
+                    'meta_type': 'pickle',
+                    'value': {
+                        'DividendShare': share.data_set['DividendShare'],
+                        'DividendYield': share.data_set['DividendYield'],
+                        'DividendPayDate': share.data_set['DividendPayDate'],
+                        'ExDividendDate': share.data_set['ExDividendDate'],
+                    },
+                }
+                return div_m
+        return False
 
     def __update_error(self, company):
         m = {

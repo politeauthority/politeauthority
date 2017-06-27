@@ -270,8 +270,9 @@ def daily():
     count = 0
     for c in companies:
         count += 1
-        print '%s of %s %s' % (count, total_companies, c.name)
+        print '%s of %s %s' % (count, total_companies, c)
         share = Stocky().process(c)
+        print ''
 
 
 if __name__ == '__main__':
