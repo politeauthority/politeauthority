@@ -23,7 +23,6 @@ from docopt import docopt
 import os
 import requests
 from datetime import datetime
-from datetime import timedelta
 import csv
 import wikipedia
 
@@ -31,7 +30,6 @@ from politeauthority import common
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
 
-from modules.company import Company
 from modules.quote import Quote
 from modules.stocky import Stocky
 from modules import company_collections
@@ -55,7 +53,7 @@ def get_one_year():
     total = 1000
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = company_collections.wo_meta('one_year', total)
+    companies = company_collections.wo_meta('one_year_google', total)
     count = 0
     for company in companies:
         count += 1
@@ -72,86 +70,39 @@ def get_one_year():
         reader = csv.reader(f)
         c = 0
         print 'Proccessing %s' % company.name
+        total_quotes_before = len(quote_collections.get_by_company_id(company.id))
+
         for row in reader:
+            raw_date = row[0]
+            raw_open = row[1]
+            raw_high = row[2]
+            raw_low = row[3]
+            raw_close = row[4]
+            raw_volume = row[5]
             c += 1
             if c == 1:
                 continue
             q = Quote()
             q.company_id = company.id
-            q.date = datetime.strptime(row[0], '%d-%b-%y')
-            if row[1] not in ['-']:
-                q.open = row[1]
-            if row[2] not in ['-']:
-                q.high = row[2]
-            if row[3] not in ['-']:
-                q.low = row[3]
-            q.close = row[4]
-            q.volume = row[5]
+            q.date = datetime.strptime(raw_date, '%d-%b-%y')
+            if raw_open not in ['-']:
+                q.open = raw_open
+            if raw_high not in ['-']:
+                q.high = raw_high
+            if raw_low not in ['-']:
+                q.low = raw_low
+            q.close = raw_close
+            q.volume = raw_volume
             q.save()
         meta = {
-            'meta_key': 'one_year',
+            'meta_key': 'one_year_google',
             'entity_id': company.id,
             'meta_type': 'datetime',
             'value': q.date
         }
         company.save_meta(meta)
-        print 'Saved %s Quotes\n' % c
-
-
-def update_data_from_yahoo(only_interesting=False):
-    if only_interesting:
-        where_qry = '`symbol` IN ("%s")' % '","'.join(INTERSTING_SYMBOLS)
-    else:
-        where_qry = """`run_company` = 1 AND `last_update_ts` <= "%s"  """ % (datetime.now() - timedelta(hours=20))
-    qry = """SELECT `id`
-             FROM `stocks`.`companies`
-             WHERE
-             %s
-             ORDER BY last_update_ts;""" % where_qry
-    print qry
-    companies = db.ex(qry)
-    total_companies = len(companies)
-    debug = True
-    print total_companies
-    print ' '
-    count = 0
-    for c in companies:
-        count += 1
-        print '%s of %s' % (count, total_companies)
-        company = Company()
-        company.get_company_by_id(c[0])
-        print company.name
-
-        try:
-            share = Share(company.symbol)
-        except Exception, e:
-            print e
-            print "Couldn't Fetch Data for %s" % c[2]
-            continue
-        company.last_sale = share.get_price()
-        company.high_52_weeks = share.data_set['YearHigh']
-        company.low_52_weeks = share.data_set['YearLow']
-        company.high_day = share.get_days_high()
-        company.low_day = share.get_days_low()
-        company.save()
-        quote = Quote()
-        quote.company_id = company.id
-        quote.day_high = company.high_day
-        quote.day_low = company.low_day
-        quote.current = company.last_sale
-        quote.date = datetime.now()
-        quote.save()
-        if debug:
-            print company.name
-            print company.id
-            print "current_price  %s" % company.last_sale
-            print "high_52_weeks  %s" % company.high_52_weeks
-            print "low_52_weeks   %s" % company.low_52_weeks
-            print "high_day  %s" % company.high_day
-            print "low_day   %s" % company.low_day
-        print ''
-        print ''
-        print ''
+        print c
+        print 'Saved %s Quotes, Before we had %s\n' % (c, total_quotes_before)
 
 
 def get_company_wikipedia_url():
@@ -273,7 +224,12 @@ def show_company_wikipedia_url():
 def daily():
     print 'Daily'
     # get all companies needing daily
-    companies = company_collections.get_companies_daily(100)
+    companies = company_collections.wo_meta(
+        'daily_process',
+        'datetime',
+        '<=',
+        datetime.now().replace(hour=14, minute=0, second=0),
+        LIMIT)
     total_companies = len(companies)
     count = 0
     errors = 0

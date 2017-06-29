@@ -46,7 +46,7 @@
       `val_text`       TEXT DEFAULT NULL,
       `val_datetime`   DATETIME DEFAULT NULL,
       `ts_created`     DATETIME DEFAULT CURRENT_TIMESTAMP,
-      `ts_update`      DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      `ts_updated`      DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (`id`),
       UNIQUE KEY `unique_index` (`meta_key`, `entity_type`, `entity_id`)
     );
