@@ -154,6 +154,8 @@ def __set_high_lows(company):
         'field': 'high',
     }
     max_high = db.ex(qry_high)
+    if not max_high:
+        return company
     if len(max_high) > 0:
         max_high = max_high[0]
     qry_low = qry % {
