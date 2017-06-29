@@ -50,14 +50,13 @@ else:
 
 
 def get_one_year():
-    total = 1000
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = company_collections.wo_meta('one_year_google', total)
+    companies = company_collections.wo_meta('one_year_google', limit=LIMIT)
     count = 0
     for company in companies:
         count += 1
-        print "Working %s/%s" % (count, total)
+        print "Working %s/%s" % (count, LIMIT)
         print "<%s> %s" % (company.symbol, company.name)
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
@@ -73,18 +72,21 @@ def get_one_year():
         total_quotes_before = len(quote_collections.get_by_company_id(company.id))
 
         for row in reader:
-            raw_date = row[0]
+            raw_date = datetime.strptime(row[0], '%d-%b-%y')
             raw_open = row[1]
             raw_high = row[2]
             raw_low = row[3]
             raw_close = row[4]
-            raw_volume = row[5]
+            if len(row > 5):
+                raw_volume = row[5]
+            else:
+                raw_volume = None
             c += 1
             if c == 1:
                 continue
             q = Quote()
             q.company_id = company.id
-            q.date = datetime.strptime(raw_date, '%d-%b-%y')
+            q.date = raw_date
             if raw_open not in ['-']:
                 q.open = raw_open
             if raw_high not in ['-']:
