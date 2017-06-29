@@ -19,7 +19,7 @@ def get_recently_modified(page=1):
     qry = """
         SELECT `id`
         FROM `stocks`.`companies`
-        ORDER BY `ts_update` DESC LIMIT %s OFFSET %s;
+        ORDER BY `ts_updated` DESC LIMIT %s OFFSET %s;
         """ % (limit, (limit * page) - limit)
     return __qry_to_companies(qry, False)
 
@@ -52,7 +52,7 @@ def wo_meta(meta, meta_type=None, comparison=None, value=None, limit=10):
         WHERE
             m.`meta_key` is NULL
             %(or_val_sql)s
-        ORDER BY c.`ts_update` ASC
+        ORDER BY c.`ts_updated` ASC
         LIMIT %(limit)s;
     """ % {
         'meta_key': meta,
@@ -82,7 +82,7 @@ def get_companies_needing_wikipedia_url(limit=10):
                 mm.`val_int` is NULL OR
                 mm.`val_int` < 4
             )
-        ORDER BY c.`ts_update` ASC
+        ORDER BY c.`ts_updated` ASC
         LIMIT %(limit)s;
     """ % {
         'limit': limit

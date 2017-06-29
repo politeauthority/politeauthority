@@ -128,7 +128,7 @@ class Company(object):
             'low_52_weeks_date': self.low_52_weeks_date,
             'run_company': self.run_company,
         }
-        print db.iodku(company_table, data)
+        db.iodku(company_table, data)
 
     def save_meta(self, meta_info):
         meta_info['entity_id'] = self.id
