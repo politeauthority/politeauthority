@@ -18,7 +18,7 @@
       `low_52_weeks_date`   DATETIME DEFAULT NULL,
       `run_company`         TINYINT(1) DEFAULT NULL,
       `ts_created`          DATETIME DEFAULT CURRENT_TIMESTAMP,
-      `ts_update`           DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      `ts_updated`          DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (`id`),
       KEY `symbol` (`symbol`)
     );
@@ -53,7 +53,9 @@ class Company(object):
         self.low_52_weeks = None
         self.low_52_weeks_date = None
         self.run_company = None
-        self.ts_update = None
+        self.ts_updated = None
+
+        self.loaded = []
 
     def __repr__(self):
         return '<Company %r, %r>' % (self.symbol, self.name)
@@ -104,7 +106,7 @@ class Company(object):
         self.low_52_weeks_date = company_row[12]
         self.run_company = company_row[13]
         self.ts_created = company_row[14]
-        self.ts_update = company_row[15]
+        self.ts_updated = company_row[15]
 
     def save(self, save_none_vals=[]):
         if self.price in ['n/a']:
@@ -126,11 +128,32 @@ class Company(object):
             'low_52_weeks_date': self.low_52_weeks_date,
             'run_company': self.run_company,
         }
-        db.iodku(company_table, data)
+        print db.iodku(company_table, data)
+
+    def save_meta(self, meta_info):
+        meta_info['entity_id'] = self.id
+        meta_info['entity_type'] = 'company'
+        meta_info
+        m.save(meta_info)
+
+    def save_webhit(self):
+        if 'meta' not in self.loaded:
+            self.load()
+        if 'web_hit' not in self.meta:
+            m = {
+                'meta_type': 'int',
+                'meta_key': 'web_hit',
+                'value': 1,
+            }
+        else:
+            m = self.meta['web_hit']
+            m['value'] = m['value'] + 1
+        self.save_meta(m)
 
     def load(self):
         # self.load_quotes()
         self.load_meta()
+        self.loaded = ['meta']
 
     def load_quotes(self, limit=31):
         qry = """
@@ -145,11 +168,5 @@ class Company(object):
         info['entity_id'] = self.id
         info['entity_type'] = 'company'
         self.meta = m.load(info)
-
-    def save_meta(self, meta_info):
-        meta_info['entity_id'] = self.id
-        meta_info['entity_type'] = 'company'
-        meta_info
-        m.save(meta_info)
 
 # End File: stocks/modules/company.py

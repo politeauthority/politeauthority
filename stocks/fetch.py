@@ -44,7 +44,7 @@ download_path = os.path.join(environmental.get_temp_dir(), 'stocks')
 db = DriverMysql(environmental.mysql_conf())
 
 if environmental.build() == 'dev':
-    LIMIT = 100
+    LIMIT = 10
 else:
     LIMIT = 7800
 
@@ -52,14 +52,33 @@ else:
 def get_one_year():
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = company_collections.wo_meta('one_year_google', limit=LIMIT)
+    companies = company_collections.wo_meta('daily_google', limit=LIMIT)
+    companies = company_collections.wo_meta(
+        'daily_google',
+        'datetime',
+        '<=',
+        datetime.now().replace(hour=14, minute=0, second=0),
+        LIMIT)
     count = 0
     for company in companies:
+        company.load()
         count += 1
         print "Working %s/%s" % (count, LIMIT)
         print "<%s> %s" % (company.symbol, company.name)
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
+        if r.status_code != 200:
+            if 'daily_google_fail' in company.meta:
+                meta_fail = company.meta['daily_google_fail']
+                meta_fail['value'] = meta_fail['value'] + 1
+            else:
+                meta_fail['meta_type'] = 'int'
+                meta_fail['value'] = 1
+            print 'Company Failed'
+            company.save_meta(meta_fail)
+            company.save()
+            continue
+
         csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
         year_file = csv_file
         print 'Downloading: %s' % csv_file
@@ -70,20 +89,19 @@ def get_one_year():
         c = 0
         print 'Proccessing %s' % company.name
         total_quotes_before = len(quote_collections.get_by_company_id(company.id))
-
         for row in reader:
+            c += 1
+            if c == 1:
+                continue
             raw_date = datetime.strptime(row[0], '%d-%b-%y')
             raw_open = row[1]
             raw_high = row[2]
             raw_low = row[3]
             raw_close = row[4]
-            if len(row > 5):
+            if len(row) > 5:
                 raw_volume = row[5]
             else:
                 raw_volume = None
-            c += 1
-            if c == 1:
-                continue
             q = Quote()
             q.company_id = company.id
             q.date = raw_date
@@ -103,6 +121,7 @@ def get_one_year():
             'value': q.date
         }
         company.save_meta(meta)
+        company.save()
         print c
         print 'Saved %s Quotes, Before we had %s\n' % (c, total_quotes_before)
 

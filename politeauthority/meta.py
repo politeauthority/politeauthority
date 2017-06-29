@@ -133,7 +133,8 @@ class Meta(object):
                     `entity_type`="%s"
                     AND
                     `entity_id`=%s
-                    %s; """ % (
+                    %s
+                ORDER BY ts_updated DESC; """ % (
             self.meta_table,
             meta['entity_type'],
             meta['entity_id'],
