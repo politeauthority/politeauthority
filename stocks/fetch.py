@@ -73,7 +73,7 @@ def get_one_year():
                 meta_fail['value'] = meta_fail['value'] + 1
             else:
                 meta_fail = {}
-                meta_fail['meta_ket'] = 'daily_google_fail'
+                meta_fail['meta_key'] = 'daily_google_fail'
                 meta_fail['meta_type'] = 'int'
                 meta_fail['value'] = 1
             print 'Company Failed'
