@@ -20,7 +20,8 @@
       `ts_created`          DATETIME DEFAULT CURRENT_TIMESTAMP,
       `ts_updated`          DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (`id`),
-      KEY `symbol` (`symbol`)
+      KEY `symbol` (`symbol`),
+      UNIQUE KEY `unique_index` (`symbol`, `exchange`)
     );
 
 """
@@ -128,7 +129,7 @@ class Company(object):
             'low_52_weeks_date': self.low_52_weeks_date,
             'run_company': self.run_company,
         }
-        db.iodku(company_table, data)
+        print db.iodku(company_table, data)
 
     def save_meta(self, meta_info):
         meta_info['entity_id'] = self.id

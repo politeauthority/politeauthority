@@ -14,7 +14,7 @@
         `ts_created`    DATETIME DEFAULT CURRENT_TIMESTAMP,
         `ts_update`     DATETIME ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
-        UNIQUE KEY `unique_index` (`company_id`, `date`)
+        UNIQUE KEY `unique_index` (`company_id`, `quote_date`)
     );
 
 """

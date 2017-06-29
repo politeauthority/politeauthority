@@ -23,6 +23,7 @@ from docopt import docopt
 import os
 import requests
 from datetime import datetime
+from datetime import timedelta
 import csv
 import wikipedia
 
@@ -53,6 +54,7 @@ def get_one_year():
     if not os.path.exists(download_path):
         os.makedirs(download_path)
     companies = company_collections.wo_meta('daily_google', limit=LIMIT)
+    comapnies_to_run = len(companies)
     # companies = company_collections.wo_meta(
     #     'daily_google',
     #     'datetime',
@@ -63,8 +65,9 @@ def get_one_year():
     for company in companies:
         company.load()
         count += 1
-        print "Working %s/%s" % (count, LIMIT)
         print "<%s> %s" % (company.symbol, company.name)
+        print "\tWorking %s/%s" % (count, comapnies_to_run)
+
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
         if r.status_code != 200:
@@ -76,20 +79,20 @@ def get_one_year():
                 meta_fail['meta_key'] = 'daily_google_fail'
                 meta_fail['meta_type'] = 'int'
                 meta_fail['value'] = 1
-            print 'Company Failed'
+            print '\tCompany Failed'
             company.save_meta(meta_fail)
             company.save()
             continue
 
         csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
         year_file = csv_file
-        print 'Downloading: %s' % csv_file
+        print '\tDownloading: %s' % csv_file
         with open(year_file, 'wb') as code:
             code.write(r.content)
         f = open(year_file, 'rb')
         reader = csv.reader(f)
         c = 0
-        print 'Proccessing %s' % company.name
+        print '\tProccessing %s' % company.name
         total_quotes_before = len(quote_collections.get_by_company_id(company.id))
         for row in reader:
             c += 1
@@ -122,10 +125,51 @@ def get_one_year():
             'meta_type': 'datetime',
             'value': q.date
         }
+        # __set_high_lows(company)
         company.save_meta(meta)
+        company = __set_high_lows(company)
         company.save()
         print c
-        print 'Saved %s Quotes, Before we had %s\n' % (c, total_quotes_before)
+        print '\tSaved %s Quotes, Before we had %s\n' % (c, total_quotes_before)
+
+
+def __set_high_lows(company):
+    qry = """
+        SELECT `id`, `%(field)s`, `quote_date`
+        FROM `stocks`.`quotes`
+        WHERE
+            `company_id` = %(company_id)s AND
+            `%(field)s` = (
+            SELECT %(operator)s(%(field)s)
+            FROM `stocks`.`quotes`
+            WHERE
+                `company_id` = %(company_id)s AND
+                `quote_date` >= "%(quote_date)s"
+        );
+    """
+    qry_high = qry % {
+        'company_id': company.id,
+        'quote_date': datetime.now() - timedelta(days=365),
+        'operator': 'max',
+        'field': 'high',
+    }
+    max_high = db.ex(qry_high)
+    if len(max_high) > 0:
+        max_high = max_high[0]
+    qry_low = qry % {
+        'company_id': company.id,
+        'quote_date': datetime.now() - timedelta(days=365),
+        'operator': 'min',
+        'field': 'low',
+    }
+    min_low = db.ex(qry_low)
+    if len(min_low) > 0:
+        min_low = min_low[0]
+    company.high_52_weeks = max_high[1]
+    company.high_52_weeks_date = max_high[2]
+    company.low_52_weeks = min_low[1]
+    company.low_52_weeks_date = min_low[2]
+    return company
 
 
 def get_company_wikipedia_url():
@@ -244,6 +288,14 @@ def show_company_wikipedia_url():
     # print all_companies
 
 
+def daily_high_lows():
+    print 'DAILY HIGH LOWS'
+    companies = company_collections.wo_meta('daily_google', limit=LIMIT)
+    for c in companies:
+        c.load()
+        __set_high_lows(c)
+
+
 def daily():
     print 'Daily'
     # get all companies needing daily
@@ -315,6 +367,7 @@ if __name__ == '__main__':
     if args['--update']:
         daily_updates()
     if args['--after_markets']:
+        # daily_high_lows()
         get_one_year()
     if args['--get_wiki']:
         get_company_wikipedia_url()
