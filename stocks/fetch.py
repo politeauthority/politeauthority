@@ -10,7 +10,7 @@ Options:
     --get_interesting     Fetch Interesting companies only.
     --build_from_nasdaq   Populates company table and last_price column,
                              most likely from the day. Best to run this EOB
-    --one_year            Backfill 1 year quote data from Google where we dont have
+    --after_markets       Backfill 1 year quote data from Google where we dont have
     --get_wiki            Get company wikipedia urls where we dont have them
     --daily               Runs after market close routines
     --update              Run daily update
@@ -53,12 +53,12 @@ def get_one_year():
     if not os.path.exists(download_path):
         os.makedirs(download_path)
     companies = company_collections.wo_meta('daily_google', limit=LIMIT)
-    companies = company_collections.wo_meta(
-        'daily_google',
-        'datetime',
-        '<=',
-        datetime.now().replace(hour=14, minute=0, second=0),
-        LIMIT)
+    # companies = company_collections.wo_meta(
+    #     'daily_google',
+    #     'datetime',
+    #     '<=',
+    #     datetime.now().replace(hour=14, minute=0, second=0),
+    #     LIMIT)
     count = 0
     for company in companies:
         company.load()
@@ -312,7 +312,7 @@ if __name__ == '__main__':
         daily()
     if args['--update']:
         daily_updates()
-    if args['--one_year']:
+    if args['--after_markets']:
         get_one_year()
     if args['--get_wiki']:
         get_company_wikipedia_url()
