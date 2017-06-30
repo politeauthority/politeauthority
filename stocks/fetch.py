@@ -123,7 +123,7 @@ def get_one_year():
             'meta_key': 'one_year_google',
             'entity_id': company.id,
             'meta_type': 'datetime',
-            'value': q.date
+            'value': datetime.now()
         }
         # __set_high_lows(company)
         company.save_meta(meta)
