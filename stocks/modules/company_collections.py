@@ -1,5 +1,4 @@
 from datetime import datetime
-from datetime import timedelta
 
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
@@ -50,7 +49,10 @@ def wo_meta(meta, meta_type=None, comparison=None, value=None, limit=10):
                     c.`id` = m.`entity_id` AND
                     m.`meta_key` = "%(meta_key)s"
         WHERE
-            m.`meta_key` is NULL
+            (
+                m.`meta_key` is NULL AND
+                c.`run_company` = 1
+            )
             %(or_val_sql)s
         ORDER BY c.`ts_updated` ASC
         LIMIT %(limit)s;

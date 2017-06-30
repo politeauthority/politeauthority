@@ -53,20 +53,21 @@ else:
 def get_one_year():
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = company_collections.wo_meta('daily_google', limit=LIMIT)
-    comapnies_to_run = len(companies)
-    # companies = company_collections.wo_meta(
-    #     'daily_google',
-    #     'datetime',
-    #     '<=',
-    #     datetime.now().replace(hour=14, minute=0, second=0),
-    #     LIMIT)
+    # companies = company_collections.wo_meta('daily_google', limit=LIMIT)
+    companies = company_collections.wo_meta(
+        'daily_google',
+        'datetime',
+        '<=',
+        datetime.now().replace(hour=14, minute=0, second=0),
+        LIMIT)
+
+    companies_to_run = len(companies)
     count = 0
     for company in companies:
         company.load()
         count += 1
         print "<%s> %s" % (company.symbol, company.name)
-        print "\tWorking %s/%s" % (count, comapnies_to_run)
+        print "\tWorking %s/%s" % (count, companies_to_run)
 
         url = "https://www.google.com/finance/historical?output=csv&q=%s" % company.symbol
         r = requests.get(url)
@@ -79,8 +80,14 @@ def get_one_year():
                 meta_fail['meta_key'] = 'daily_google_fail'
                 meta_fail['meta_type'] = 'int'
                 meta_fail['value'] = 1
-            print '\tCompany Failed'
+            meta_fail2 = {}
+            meta_fail2['meta_key'] = 'daily_google_fail_info'
+            meta_fail2['meta_type'] = 'text'
+            meta_fail2['value'] = str(r.status_code)
+            print '\tCompany Failed: %s' % r.status_code
+            print '\t\t%s' % r.text
             company.save_meta(meta_fail)
+            company.save_meta(meta_fail2)
             company.save()
             continue
 
