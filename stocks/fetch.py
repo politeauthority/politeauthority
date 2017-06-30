@@ -120,7 +120,7 @@ def get_one_year():
             q.volume = raw_volume
             q.save()
         meta = {
-            'meta_key': 'one_year_google',
+            'meta_key': 'daily_google',
             'entity_id': company.id,
             'meta_type': 'datetime',
             'value': datetime.now()
