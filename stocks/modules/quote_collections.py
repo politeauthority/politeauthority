@@ -4,6 +4,7 @@ from datetime import timedelta
 from politeauthority import environmental
 from politeauthority.driver_mysql import DriverMysql
 
+from quote import Quote
 
 db = DriverMysql(environmental.mysql_conf())
 
@@ -20,7 +21,10 @@ def get_by_company_id(company_id, date_back=None):
         LIMIT %s;
         """ % (company_id, limit)
     res = db.ex(qry)
-    return res
+    qs = []
+    for r in res:
+        qs.append(Quote().build_from_row(r))
+    return qs
 
 
 # def get_by_company_id(company_id):

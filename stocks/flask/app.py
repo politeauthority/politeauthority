@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 
 from flask import Flask
 from flask import render_template
@@ -14,8 +15,22 @@ from modules import company_collections
 from modules import quote_collections
 
 
+def register_logging(app):
+    app_log_file = os.path.join(app.config['LOG_DIR'], 'stocky.log')
+    logging.basicConfig(filename=app_log_file, level=logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler = logging.TimedRotatingFileHandler(
+        app_log_file,
+        when='midnight',
+        backupCount=20)
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+    app.logger.addHandler(file_handler)
+
+
 def register_jinja_funcs(app):
     app.jinja_env.filters['time_ago'] = misc_time.ago
+    app.jinja_env.filters['fmt_date'] = misc_time.fmt_date
 
 
 app = Flask(__name__)
@@ -71,4 +86,6 @@ def company_data(company_id):
         'quotes': quotes
     }
     return render_template('morris_quote.js', **d)
+
+
 # End File stocks/flask/app.py

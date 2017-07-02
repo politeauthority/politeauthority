@@ -10,13 +10,19 @@ import os
 def get_logging_dir():
     return os.environ.get(
         'PA_BASE_LOGGING_DIR',
-        '/data/logs/politeauthority')
+        '/data/logs/politeauthority/logs')
 
 
 def get_temp_dir():
     return os.environ.get(
         'PA_BASE_TEMP_DIR',
-        '/tmp/politeauthority')
+        '/tmp/politeauthority/tmp')
+
+
+def get_cache_dir():
+    return os.environ.get(
+        'PA_BASE_TEMP_DIR',
+        '/tmp/politeauthority/cache')
 
 
 def get_machine_id():
@@ -34,6 +40,7 @@ def mysql_conf():
         'host': os.environ.get('PA_MYSQL_HOST', None),
         'user': os.environ.get('PA_MYSQL_USER', None),
         'pass': os.environ.get('PA_MYSQL_PASS', None),
+        'port': os.environ.get('PA_MYSQL_PORT', 3306)
     }
 
 ###############################################
@@ -80,5 +87,14 @@ def slack_url():
         'PA_SLACK_URL',
         None)
 
+###############################################
+#              STOCKY CRAP                    #
+###############################################
+
+
+def pa_stock_config():
+    return os.environ.get(
+        'PA_STOCKS_CONFIG',
+        '/home/alix/repos/politeauthority/stocks/flask/config/config_dev.py')
 
 # End File: politeauthority/politeauthority/environmental.py

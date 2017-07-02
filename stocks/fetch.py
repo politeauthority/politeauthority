@@ -13,6 +13,7 @@ Options:
     --after_markets       Backfill 1 year quote data from Google where we dont have
     --get_wiki            Get company wikipedia urls where we dont have them
     --daily               Runs after market close routines
+    --now                 Runs specific tickers to get their data
     --update              Run daily update
     -d --debug            Run the console at debug level
 
@@ -24,6 +25,7 @@ import os
 import requests
 from datetime import datetime
 from datetime import timedelta
+import time
 import csv
 import wikipedia
 
@@ -33,11 +35,12 @@ from politeauthority.driver_mysql import DriverMysql
 
 from modules.quote import Quote
 from modules.stocky import Stocky
+from modules.company import Company
 from modules import company_collections
 from modules import quote_collections
 from one_fetch import base_companies_nyse_nasdaq
 
-INTERSTING_SYMBOLS = ['YHOO', 'VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
+INTERSTING_SYMBOLS = ['VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
                       'MULE']
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -136,8 +139,8 @@ def get_one_year():
         company.save_meta(meta)
         company = __set_high_lows(company)
         company.save()
-        print c
         print '\tSaved %s Quotes, Before we had %s\n' % (c, total_quotes_before)
+        time.sleep(2)
 
 
 def __set_high_lows(company):
@@ -367,6 +370,13 @@ def daily_updates():
         print ''
 
 
+def now():
+    companies = []
+    for symbol in INTERSTING_SYMBOLS:
+        companies.append(Company().get_by_symbol(symbol))
+    for c in companies:
+        print Stocky().process(c)
+
 if __name__ == '__main__':
     args = docopt(__doc__)
     if args['--build_from_nasdaq']:
@@ -380,3 +390,5 @@ if __name__ == '__main__':
         get_one_year()
     if args['--get_wiki']:
         get_company_wikipedia_url()
+    if args['--now']:
+        now()

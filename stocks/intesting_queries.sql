@@ -38,13 +38,26 @@ SELECT c.name, c.sector,  m.val_text, m.ts_update
 
 -- COMPANIES WITH WIKI SEARCH ERRORS
 
-SELECT c.name, m.val_text, m.ts_update
+SELECT c.name, m.val_datetime, m.ts_update
     FROM stocks.companies c
         JOIN stocks.meta m
             ON c.id=m.entity_id AND m.entity_type='company'
     WHERE
-        m.meta_key = 'wikipedia_search_error'
+        m.meta_key = 'daily'
     ORDER BY m.ts_update DESC;
+
+
+-- compaies with meta
+SELECT c.name, c.sector, m.meta_key, m.val_text, m.ts_update
+    FROM stocks.companies c
+        JOIN stocks.meta m
+            ON c.id=m.entity_id AND m.entity_type='company'
+    WHERE
+        m.meta_key = 'dividend_stock'
+    ORDER BY m.ts_update DESC;
+
+
+
 
 
 -- Companies with high close avg price, min price and max close
@@ -64,3 +77,21 @@ select c.name, AVG(q.close), MIN(q.close), MAX(q.close)
 -- different types and counts of meta
 select distinct meta_key, count(*) from meta group by 1 order by 2 desc;
 
+
+
+
+-- QA daily
+
+select distinct left(val_datetime, 10), count(*)
+from meta 
+where meta_key = "daily_google"
+group by 1;
+
+
+
+
+
+select distinct company_id, left(`date`, 10), count(*)
+from stocks.quotes
+where company_id =178
+group by 1, 2;

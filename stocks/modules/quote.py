@@ -53,7 +53,7 @@ class Quote(object):
         self.build_from_row(q_row[0])
 
     def build_from_row(self, quote_row):
-        self.id = self.id
+        self.id = quote_row[0]
         self.company_id = quote_row[1]
         self.open = quote_row[2]
         self.close = quote_row[3]
@@ -61,6 +61,7 @@ class Quote(object):
         self.low = quote_row[5]
         self.volume = quote_row[6]
         self.date = quote_row[7]
+        return self
 
     def save(self):
         data = {

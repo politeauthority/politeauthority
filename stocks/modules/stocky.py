@@ -40,7 +40,7 @@ class Stocky(object):
         q.date = common.utc_to_mountain(share.data_set['LastTradeDateTimeUTC'])
         q.save()
         meta = {
-            'meta_key': 'daily',
+            'meta_key': 'last_price',
             'entity_id': company.id,
             'meta_type': 'datetime',
             'value': q.date

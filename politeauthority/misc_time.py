@@ -71,3 +71,7 @@ def ago(the_time):
     if '-' in str(value):
         value = str(value).replace('-', '')
     return "%s %s %s %s" % (prefix, value, unit, suffix)
+
+
+def fmt_date(the_date,):
+    return the_date.strftime(the_date, '%M-%d %Y')
