@@ -370,8 +370,8 @@ def daily_updates():
 
 
 def now():
-    companies = []
-    INTERSTING_SYMBOLS = ['MSFT', 'VSLR', 'TWTR', 'SPYD']
+    companies = company_collections.get_watch_list()
+    # INTERSTING_SYMBOLS = ['MSFT', 'VSLR', 'TWTR', 'SPYD']
     for symbol in INTERSTING_SYMBOLS:
         companies.append(Company().get_by_symbol(symbol))
     for c in companies:

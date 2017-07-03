@@ -1,6 +1,7 @@
 import sys
 import os
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime
 from datetime import timedelta
 
@@ -10,6 +11,7 @@ from flask import render_template
 from flask_debugtoolbar import DebugToolbarExtension
 
 from politeauthority import misc_time
+from politeauthority import common
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -24,7 +26,7 @@ def register_logging(app):
     app_log_file = os.path.join(app.config['LOG_DIR'], 'stocky.log')
     logging.basicConfig(filename=app_log_file, level=logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.TimedRotatingFileHandler(
+    file_handler = TimedRotatingFileHandler(
         app_log_file,
         when='midnight',
         backupCount=20)
@@ -37,12 +39,14 @@ def register_jinja_funcs(app):
     app.jinja_env.filters['time_ago'] = misc_time.ago
     app.jinja_env.filters['fmt_date'] = misc_time.fmt_date
     app.jinja_env.filters['fmt_currency'] = jinja_filters.format_currency
+    app.jinja_env.filters['percentage'] = common.get_percentage
 
 
 app = Flask(__name__)
 app.config.from_envvar('PA_STOCKS_CONFIG')
 toolbar = DebugToolbarExtension(app)
 register_jinja_funcs(app)
+register_logging(app)
 
 
 @app.route('/')
@@ -59,6 +63,7 @@ def dashboard():
 def company(symbol):
     company = Company().get_by_symbol(symbol)
     company.load()
+    company.avg_52_weeks = quote_collections.get_avg_company_id(company.id)
     d = {
         'company': company,
     }
@@ -105,6 +110,7 @@ def portfolio():
     portfolio = portfolio_event_collections.get_by_portfolio_id(1, True)
     d = {
         'portfolio': portfolio,
+        'companies': portfolio['companies'],
         'events': portfolio['events']
     }
     return render_template('portfolio.html', **d)
@@ -122,7 +128,6 @@ def portfolio_data(portfolio_id):
             oldest_date = e.date
         if e.date < oldest_date:
             oldest_date = e.date
-    print oldest_date
     one_year_ago = timedelta(days=365)
     if oldest_date > datetime.now() - one_year_ago:
         query_date = oldest_date

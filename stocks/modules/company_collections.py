@@ -25,7 +25,7 @@ def get_recently_modified(page=1):
 
 def get_watch_list(page=1):
     companies = ['VSLR', 'TWTR', 'MSFT', 'AAPL', 'TSLA', 'NFLX', 'FB', 'SNAP', 'FIT', 'AMD',
-                 'NVDA', 'MULE']
+                 'NVDA', 'MULE', 'SPYD']
     limit = 40
     qry = """
         SELECT `id`
@@ -38,15 +38,14 @@ def get_watch_list(page=1):
 
 def by_meta(meta_key, limit=10):
     qry = """
-          SELECT c.`id`
-          FROM `stocks`.`companies` c
-            JOIN `stocks`.`meta` m
-                ON c.id = m.entity_id AND m.entity_type="company"
-          WHERE
-            `meta_key`="%s"; """ % meta_key
+      SELECT c.`id`
+      FROM `stocks`.`companies` c
+        JOIN `stocks`.`meta` m
+            ON c.id = m.entity_id AND m.entity_type="company"
+      WHERE
+        `meta_key`="%s"; """ % meta_key
     if limit:
         qry += 'LIMIT %s' % limit
-
     return __qry_to_companies(qry, False)
 
 

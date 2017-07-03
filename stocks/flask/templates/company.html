@@ -15,24 +15,14 @@
 
 <div id="page-wrapper">
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-8">
             <h1 class="page-header">{{company.name}}</h1>
-            {%if company.sector%}
-                <h3>{{company.sector}}</h3>
-            {%endif%}
-            {%if company.industry%}
-                <h4>{{company.industry}}</h4>
-            {%endif%}
-            {%if 'wikipedia_url' in company.meta%}
-                <i class="fa fa-wikipedia-w fa-5x"></i><small><a href="{{company.meta['wikipedia_url']['value']}}" target="wiki">{{company.meta['wikipedia_url']['value']}}</a></small>
-                <br>
-            {%endif%}
         </div>
-        <!-- /.col-lg-12 -->
+        <!-- /.col-lg-8-->
     </div>
     <!-- /.row -->
     <div class="row">
-        <div class="col-lg-3 col-md-6">
+        <div class="col-lg-4 col-md-6">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <div class="row">
@@ -40,21 +30,58 @@
                             <i class="fa fa-dollar fa-5x"></i>
                         </div>
                         <div class="col-xs-9 text-right">
-                            <div class="huge">{{company.price}}</div>
+                            <div class="huge">{{company.price|fmt_currency}}</div>
                             <div>Current Price</div>
                         </div>
                     </div>
                 </div>
-                <a href="#">
-                    <div class="panel-footer">
-                        <span class="pull-left">Current Price</span>
-                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                        <div class="clearfix"></div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <td><strong>52 Week</strong></td>
+                                    <td></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>High</td>
+                                    <td>
+                                        <strong>$ {{company.high_52_weeks|fmt_currency}}</strong>
+                                        <small>(-{{(company.high_52_weeks - company.price)|percentage(company.high_52_weeks)}}%)</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>{{company.high_52_weeks_date|time_ago}}
+                                </tr>
+                                <tr>
+                                    <td>Low</td>
+                                    <td>
+                                        <strong>$ {{company.low_52_weeks|fmt_currency}}</strong>
+                                        <small>(+{{(company.price - company.low_52_weeks)|percentage(company.price)}}%)</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>{{company.low_52_weeks_date|time_ago}}
+                                </tr>
+                                <tr>
+                                    <td>Avg</td>
+                                    <td>
+                                        <strong>$ {{company.avg_52_weeks|fmt_currency}}</strong>
+                                        ( {{(company.price - company.avg_52_weeks)|percentage(company.price)}}% )
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </a>
+                </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
+<!--         <div class="col-lg-3 col-md-6">
             <div class="panel panel-green">
                 <div class="panel-heading">
                     <div class="row">
@@ -97,11 +124,89 @@
                     </div>
                 </a>
             </div>
+        </div> -->
+        <div class="col-lg-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-building fa-fw"></i> Info
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="list-group">
+                                {%if company.sector%}
+                                    <a href="#" class="list-group-item">
+                                        <i class="fa fa-building-o fa-fw"></i> Sector
+                                        <span class="pull-right text-muted"><strong>{{company.sector}}</strong></span>
+                                    </a>
+                                {%endif%}
+                                {%if company.industry%}
+                                    <a href="#" class="list-group-item">
+                                        <i class="fa fa-building-o fa-fw"></i> Industry
+                                        <span class="pull-right text-muted">
+                                            <strong>{{company.industry}}</strong>
+                                        </span>
+                                    </a>
+                                {%endif%}
+                                {%if company.exchange %}
+                                    <a href="#" class="list-group-item">
+                                        <i class="fa fa-building-o fa-fw"></i> Exchange
+                                        <span class="pull-right text-muted"><strong>{{company.exchange}}</strong></span>
+                                    </a>
+                                {%endif%}
+                                {%if 'wikipedia_url' in company.meta%}
+                                    <a href="{{company.meta['wikipedia_url']['value']}}" target="_new" class="list-group-item">
+                                        <i class="fa fa-wikipedia-w fa-fw"></i> Wikipedia Url
+                                        <span class="pull-right text-muted">
+                                            {{company.meta['wikipedia_url']['value']}}
+                                        </span>
+                                    </a>
+                                {%endif%}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- /.row -->
     <div class="row">
         <div class="col-lg-8">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> 52 Week Chart
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                Actions
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right" role="menu">
+                                <li><a href="#">Action</a>
+                                </li>
+                                <li><a href="#">Another action</a>
+                                </li>
+                                <li><a href="#">Something else here</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li><a href="#">Separated link</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+                    <div class="flot-chart">
+                        <div style="width:100%;height:100%" class="flot-chart-content" id="flot-line-chart-multi"></div>
+                    </div>
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            <!-- /.panel -->
+
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fa fa-bar-chart-o fa-fw"></i> Company Meta Data
@@ -125,7 +230,14 @@
                         </div>
                     </div>
                 </div>
+
+
+
+
                 <!-- /.panel-heading -->
+
+
+
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-lg-12">
@@ -173,38 +285,7 @@
                 <!-- /.panel-body -->
             </div>
 
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <i class="fa fa-bar-chart-o fa-fw"></i> 52 Week Chart
-                    <div class="pull-right">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                                Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu pull-right" role="menu">
-                                <li><a href="#">Action</a>
-                                </li>
-                                <li><a href="#">Another action</a>
-                                </li>
-                                <li><a href="#">Something else here</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li><a href="#">Separated link</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
-                    <div class="flot-chart">
-                        <div style="width:100%;height:100%" class="flot-chart-content" id="flot-line-chart-multi"></div>
-                    </div>
-                </div>
-                <!-- /.panel-body -->
-            </div>
-            <!-- /.panel -->
+
 
         </div>
         <!-- /.col-lg-8 -->
@@ -232,41 +313,12 @@
                                 
                             </a>
                         {%endif%}
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-envelope fa-fw"></i> Message Sent
-                            <span class="pull-right text-muted small"><em>27 minutes ago</em>
-                            </span>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-tasks fa-fw"></i> New Task
-                            <span class="pull-right text-muted small"><em>43 minutes ago</em>
-                            </span>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-upload fa-fw"></i> Server Rebooted
-                            <span class="pull-right text-muted small"><em>11:32 AM</em>
-                            </span>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-bolt fa-fw"></i> Server Crashed!
-                            <span class="pull-right text-muted small"><em>11:13 AM</em>
-                            </span>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-warning fa-fw"></i> Server Not Responding
-                            <span class="pull-right text-muted small"><em>10:57 AM</em>
-                            </span>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-shopping-cart fa-fw"></i> New Order Placed
-                            <span class="pull-right text-muted small"><em>9:49 AM</em>
-                            </span>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <i class="fa fa-money fa-fw"></i> Payment Received
-                            <span class="pull-right text-muted small"><em>Yesterday</em>
-                            </span>
-                        </a>
+                        {%if 'last_price' in company.meta%}
+                            <a href="#" class="list-group-item">
+                                <i class="fa fa-clock-o fa-fw"></i> Last Price
+                                <span class="pull-right text-muted"><strong>{{company.meta['last_price']['value']|time_ago}}</strong></span>
+                            </a>
+                        {%endif%}
                     </div>
                     <!-- /.list-group -->
                     <a href="#" class="btn btn-default btn-block">View All Alerts</a>

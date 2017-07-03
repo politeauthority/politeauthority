@@ -65,6 +65,21 @@ def get_by_company_ids(company_ids, date_back=None):
 
     return qs
 
+
+def get_avg_company_id(company_id, date_back=None):
+    if not date_back:
+        date_back = datetime.now() - timedelta(days=365)
+    qry = """
+        SELECT AVG(`close`) as avg
+        FROM `stocks`.`quotes`
+        WHERE
+            `company_id` = %s AND
+            `quote_date` >= "%s"
+        ORDER BY `quote_date` DESC;
+        """ % (company_id, date_back)
+    res = db.ex(qry)
+    return res[0][0]
+
 # def get_by_company_id(company_id):
 #     qry = """
 #         SELECT max(`high`), `date`, id

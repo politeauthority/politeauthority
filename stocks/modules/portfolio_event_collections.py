@@ -29,6 +29,8 @@ def get_by_portfolio_id(portfolio_id, load_full=False):
     companies = {}
     for c in company_ids:
         company = Company().get_company_by_id(c)
+        company.stake = 0
+        company.value = 0
         companies[company.id] = company
     portfolio = {
         'events': events,
@@ -47,6 +49,8 @@ def get_by_portfolio_id(portfolio_id, load_full=False):
         if e.type == 'buy':
             totals['amt_invested'] += (e.price * e.count)
             totals['amt_total_value'] += (e.company.price * e.count)
+            e.company.stake += (e.price * e.count)
+            e.company.value += (e.company.price * e.count)
     totals['cash_available'] = totals['cash_in'] - totals['amt_invested']
     totals['amt_standing'] = totals['amt_invested'] - totals['amt_total_value']
     totals['percent_val'] = common.get_percentage(
