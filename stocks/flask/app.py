@@ -1,8 +1,11 @@
 import sys
 import os
 import logging
+from datetime import datetime
+from datetime import timedelta
 
 from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
 from flask import render_template
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -11,8 +14,10 @@ from politeauthority import misc_time
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from modules.company import Company
+from modules import portfolio_event_collections
 from modules import company_collections
 from modules import quote_collections
+from helpers import jinja_filters
 
 
 def register_logging(app):
@@ -31,11 +36,11 @@ def register_logging(app):
 def register_jinja_funcs(app):
     app.jinja_env.filters['time_ago'] = misc_time.ago
     app.jinja_env.filters['fmt_date'] = misc_time.fmt_date
+    app.jinja_env.filters['fmt_currency'] = jinja_filters.format_currency
 
 
 app = Flask(__name__)
-app.debug = True
-app.config['SECRET_KEY'] = 'KEYKEYKEY'
+app.config.from_envvar('PA_STOCKS_CONFIG')
 toolbar = DebugToolbarExtension(app)
 register_jinja_funcs(app)
 
@@ -45,7 +50,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/')
+@app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
 
@@ -54,16 +59,25 @@ def dashboard():
 def company(symbol):
     company = Company().get_by_symbol(symbol)
     company.load()
-    # company.load_quotes()
     d = {
         'company': company,
-        'quotes': quote_collections.get_by_company_id(company.id)
     }
     if company:
         company.save_webhit()
         return render_template('company.html', **d)
     else:
         return '404'
+
+
+@app.route('/company_data/<company_id>/quote_data.js')
+def company_data(company_id):
+    quotes = quote_collections.get_by_company_id(company_id)
+    if not quotes:
+        return 'ERROR'
+    d = {
+        'quotes': quotes
+    }
+    return render_template('json/company_quote.js', **d)
 
 
 @app.route('/recent')
@@ -77,15 +91,48 @@ def recent():
     return render_template('recent.html', **d)
 
 
-@app.route('/company_data/<company_id>/quote_data.js')
-def company_data(company_id):
-    quotes = quote_collections.get_by_company_id(company_id)
+@app.route('/watch')
+def watch():
+    companies = company_collections.get_watch_list()
+    d = {
+        'companies': companies
+    }
+    return render_template('recent.html', **d)
+
+
+@app.route('/portfolio')
+def portfolio():
+    portfolio = portfolio_event_collections.get_by_portfolio_id(1, True)
+    d = {
+        'portfolio': portfolio,
+        'events': portfolio['events']
+    }
+    return render_template('portfolio.html', **d)
+
+
+@app.route('/portfolio_data/<portfolio_id>/quote_data.js')
+def portfolio_data(portfolio_id):
+    companies = []
+    oldest_date = None
+    portfolio = portfolio_event_collections.get_by_portfolio_id(portfolio_id)
+    for e in portfolio['events']:
+        if e.company_id not in companies:
+            companies.append(e.company_id)
+        if not oldest_date:
+            oldest_date = e.date
+        if e.date < oldest_date:
+            oldest_date = e.date
+    print oldest_date
+    one_year_ago = timedelta(days=365)
+    if oldest_date > datetime.now() - one_year_ago:
+        query_date = oldest_date
+    else:
+        query_date = datetime.now() - one_year_ago
+    quotes = quote_collections.get_by_company_ids(companies, query_date)
     if not quotes:
         return 'ERROR'
     d = {
         'quotes': quotes
     }
-    return render_template('morris_quote.js', **d)
-
-
+    return render_template('json/portfolio_quote.js', **d)
 # End File stocks/flask/app.py

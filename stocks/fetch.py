@@ -15,6 +15,7 @@ Options:
     --daily               Runs after market close routines
     --now                 Runs specific tickers to get their data
     --update              Run daily update
+    --stock=<stock>       Get specific comma separated stocks.
     -d --debug            Run the console at debug level
 
     markets open between 7:30am - 2pm MTN
@@ -40,8 +41,6 @@ from modules import company_collections
 from modules import quote_collections
 from one_fetch import base_companies_nyse_nasdaq
 
-INTERSTING_SYMBOLS = ['VSLR', 'YEXT', 'VERI', 'PSDO', 'SGH', 'APPN', 'AYX', 'SNAP', 'GDI', 'CLDR', 'OKTA',
-                      'MULE']
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 download_path = os.path.join(environmental.get_temp_dir(), 'stocks')
@@ -56,13 +55,13 @@ else:
 def get_one_year():
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    # companies = company_collections.wo_meta('daily_google', limit=LIMIT)
-    companies = company_collections.wo_meta(
-        'daily_google',
-        'datetime',
-        '<=',
-        datetime.now().replace(hour=14, minute=0, second=0),
-        LIMIT)
+    companies = company_collections.get_watch_list()
+    # companies = company_collections.wo_meta(
+    #     'daily_google',
+    #     'datetime',
+    #     '<=',
+    #     datetime.now().replace(hour=14, minute=0, second=0),
+    #     LIMIT)
 
     companies_to_run = len(companies)
     count = 0
@@ -372,10 +371,24 @@ def daily_updates():
 
 def now():
     companies = []
+    INTERSTING_SYMBOLS = ['MSFT', 'VSLR', 'TWTR', 'SPYD']
     for symbol in INTERSTING_SYMBOLS:
         companies.append(Company().get_by_symbol(symbol))
     for c in companies:
         print Stocky().process(c)
+
+
+def stock(stocks):
+    print 'Stock'
+    if ',' in stocks:
+        stocks = stocks.split(',')
+    else:
+        stocks = [stocks]
+    print stocks
+    for stock in stocks:
+        c = Company().get_by_symbol(stock)
+        share = Stocky().process(c)
+        print share
 
 if __name__ == '__main__':
     args = docopt(__doc__)
@@ -392,3 +405,6 @@ if __name__ == '__main__':
         get_company_wikipedia_url()
     if args['--now']:
         now()
+    if args['--stock']:
+        stock(args['--stock'])
+

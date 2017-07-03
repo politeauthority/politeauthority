@@ -48,13 +48,13 @@ class Company(object):
         self.sector = None
         self.industry = None
         self.exchange = None
-        self.last_update = None
         self.high_52_weeks = None
         self.high_52_weeks_date = None
         self.low_52_weeks = None
         self.low_52_weeks_date = None
         self.run_company = None
         self.ts_updated = None
+        # self.ts_created = None
 
         self.loaded = []
 

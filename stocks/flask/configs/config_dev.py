@@ -18,6 +18,7 @@ DB_PASS = mysql_conf['pass']
 DB_HOST = mysql_conf['host']
 DB_PORT = '3306'
 DB_NAME = 'stocks'
+DEBUG = True
 
 SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' % (
     DB_USER,

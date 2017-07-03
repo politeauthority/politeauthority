@@ -23,6 +23,19 @@ def get_recently_modified(page=1):
     return __qry_to_companies(qry, False)
 
 
+def get_watch_list(page=1):
+    companies = ['VSLR', 'TWTR', 'MSFT', 'AAPL', 'TSLA', 'NFLX', 'FB', 'SNAP', 'FIT', 'AMD',
+                 'NVDA', 'MULE']
+    limit = 40
+    qry = """
+        SELECT `id`
+        FROM `stocks`.`companies`
+        WHERE `symbol` IN ("%s")
+        ORDER BY `ts_updated` DESC LIMIT %s OFFSET %s;
+        """ % ('","'.join(companies), limit, (limit * page) - limit)
+    return __qry_to_companies(qry)
+
+
 def by_meta(meta_key, limit=10):
     qry = """
           SELECT c.`id`
@@ -128,7 +141,7 @@ def disc_new_companies():
     return __qry_to_companies(qry)
 
 
-def __qry_to_companies(qry, load_full):
+def __qry_to_companies(qry, load_full=False):
     res = db.ex(qry)
     companies = []
     for co in res:

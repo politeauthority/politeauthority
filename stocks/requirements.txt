@@ -4,3 +4,4 @@ wikipedia
 python-dateutil
 Flask
 flask-debugtoolbar
+flask-sqlalchemy

@@ -22,7 +22,9 @@ def get_percentage(partial, total, rounding=2):
         @return
             float()
     """
-    return round(float(partial * 100) / total, rounding)
+    partial = float(partial)
+    total = float(total)
+    return round(partial * 100 / total, rounding)
 
 
 def uncompress_file(infile, outfile=None, password=None, remove_original=True):

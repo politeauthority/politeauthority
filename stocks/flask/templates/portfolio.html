@@ -1,0 +1,231 @@
+{% extends "layout.html" %}
+{%block title%}Portfolio | Stocky{%endblock%}
+{% block javascript%}
+    <script src="/static/vendor/flot/excanvas.min.js"></script>
+    <script src="/static/vendor/flot/jquery.flot.js"></script>
+    <script src="/static/vendor/flot/jquery.flot.resize.js"></script>
+    <script src="/static/vendor/flot/jquery.flot.time.js"></script>
+    <script src="/static/vendor/flot/jquery.flot.symbol.js"></script>
+    <!-- <script src="/static/vendor/flot/jquery.flot.axislabels.js"></script> -->
+    <script src="/static/vendor/flot-tooltip/jquery.flot.tooltip.min.js"></script>
+    <!-- <script src="/static/data/flot-data.js"></script> -->
+    <script src="/portfolio_data/1/quote_data.js"></script>
+{%endblock%}
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-wrapper">
+    <div class="row">
+        <div class="col-lg-6">
+            <h1 class="page-header">Portfolio</h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 col-sm-6">
+            {%set is_down = portfolio['totals']['percent_val'] <= 0%}
+            <div class="panel {%if is_down%}panel-red{%else%}panel-green{%endif%}">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-dollar fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div class="huge">{{portfolio['totals']['amt_total_value']|fmt_currency}}</div>
+                            <div>{{portfolio['totals']['amt_standing']|fmt_currency}} ({{portfolio['totals']['percent_val']}}%)</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <div class="panel-footer">
+                        <span class="pull-left">Current Portfolio Value</span>
+                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6">
+            {%set is_down = portfolio['totals']['percent_val'] <= 0%}
+            <div class="panel panel-green">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-dollar fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div class="huge">{{portfolio['totals']['cash_available']|fmt_currency}}</div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <div class="panel-footer">
+                        <span class="pull-left">Cash Available</span>
+                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="col-lg-3 col-sm-6 text-center">
+                        Current Value
+                        <h2>${{portfolio['totals']['amt_total_value']|fmt_currency}}</h2>
+                        <small>{{portfolio['totals']['percent_val']}}</small>
+                    </div>
+                    <div class="col-lg-3 text-center">
+                        Cash Available
+                        <h2>${{portfolio['totals']['cash_available']}}</h2>
+                        <small>{{portfolio['totals']['percent_val']}}</small>
+                    </div>
+                    <div class="col-lg-3 text-center">
+                        Current Value
+                        <h2>${{portfolio['totals']['amt_total_value']}}</h2>
+                        <small>{{portfolio['totals']['percent_val']}}</small>
+                    </div>
+                    <div class="col-lg-6">
+                        {{portfolio['totals']}}()
+                    </div>
+                </div>
+            </div>
+       </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Portfolio Value
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                Actions
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right" role="menu">
+                                <li><a href="#">Another action</a>
+                                </li>
+                                <li><a href="#">Something else here</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li><a href="#">Separated link</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+                    <div class="flot-chart">
+                        <div style="width:100%;height:100%" class="flot-chart-content" id="flot-line-chart-multi"></div>
+                    </div>
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Recent Activity
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                Actions
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right" role="menu">
+                                <li><a data-toggle="modal" data-target="#exampleModal" href="#">Add Event</a>                                
+                                </li>
+                                <li><a href="#">Another action</a>
+                                </li>
+                                <li><a href="#">Something else here</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li><a href="#">Separated link</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Symbol</th>
+                                            <th>Type</th>
+                                            <th>Price</th>
+                                            <th>Count</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for event in events%}
+                                            <tr>
+                                                <td>{{event.id}}</td>
+                                                <td>
+                                                    <a href="/company/{{event.company.symbol}}">{{event.company.symbol}}</a>
+                                                </td>
+                                                <td>{{event.type}}</td>
+                                                <td>
+                                                {%if event.type == 'buy'%}
+                                                    -{{event.price}}
+                                                {%else%}
+                                                    +{{event.price}}
+                                                {%endif%}
+                                                </td>
+                                                <td>{{event.count}}</td>
+                                                <td>{{event.date}}</td>
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+                        </div>
+                        <!-- /.col-lg-4 (nested) -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+    </div>
+    <!-- /.row -->
+</div>
+
+
+{% endblock %}

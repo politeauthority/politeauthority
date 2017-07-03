@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>{%block title%}{%endblock%}</title>
         <meta charset=”utf-8”> 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -262,7 +263,19 @@
                                 <a href="/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
                             </li>
                             <li>
-                                <a href="/recent"><i class="fa fa-table fa-fw"></i> Recent</a>
+                                <a href="#"><i class="fa fa-building-o fa-fw"></i>Companies<span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level">
+                                    <li>
+                                        <a href="/recent">Recently Updated</a>
+                                    </li>
+                                    <li>
+                                        <a href="/watch">Watch List</a>
+                                    </li>
+                                </ul>
+                                <!-- /.nav-second-level -->
+                            </li>
+                            <li>
+                                <a href="/portfolio"><i class="fa fa-folder-open fa-fw"></i> Portoflio</a>
                             </li>
                         </ul>
                     </div>
@@ -281,14 +294,11 @@
 
             <!-- Metis Menu Plugin JavaScript -->
             <script src="/static/vendor/metisMenu/metisMenu.min.js"></script>
-            {%block javascript%}{%endblock%}
-            <!-- Morris Charts JavaScript -->
-            <script src="/static/vendor/raphael/raphael.min.js"></script>
-            <script src="/static/vendor/morrisjs/morris.min.js"></script>
-            <script src="/static/data/morris-data.js"></script>
 
-            <!-- Custom Theme JavaScript -->
             <script src="/static/dist/js/sb-admin-2.min.js"></script>
+
+            {%block javascript%}{%endblock%}
+
         </div>
     </body>
 </html>
