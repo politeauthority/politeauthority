@@ -10,7 +10,7 @@ import os
 def get_logging_dir():
     return os.environ.get(
         'PA_BASE_LOGGING_DIR',
-        '/data/logs/politeauthority/logs')
+        '/tmp/politeauthority/logs/politeauthority/logs')
 
 
 def get_temp_dir():
