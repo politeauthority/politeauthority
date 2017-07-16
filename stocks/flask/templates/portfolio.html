@@ -102,12 +102,12 @@
                     </div>
                     <div class="col-lg-3 text-center">
                         Cash Available
-                        <h2>${{portfolio['totals']['cash_available']}}</h2>
+                        <h2>${{portfolio['totals']['cash_available']|fmt_currency}}</h2>
                         <small>{{portfolio['totals']['percent_val']}}</small>
                     </div>
                     <div class="col-lg-3 text-center">
                         Current Value
-                        <h2>${{portfolio['totals']['amt_total_value']}}</h2>
+                        <h2>${{portfolio['totals']['amt_total_value']|fmt_currency}}</h2>
                         <small>{{portfolio['totals']['percent_val']}}</small>
                     </div>
                     <div class="col-lg-6">
