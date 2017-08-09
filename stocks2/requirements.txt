@@ -1,0 +1,7 @@
+yahoo_finance
+Google-Search-API
+wikipedia
+python-dateutil
+Flask
+flask-debugtoolbar
+flask-sqlalchemy

@@ -19,9 +19,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://%s:%s@%s:%s/%s' % (
     3306,
     'stocks2')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = False
 
 
 @app.route('/')
 def show_all():
-    return render_template('show_all.html', students=Company.query.all())
+	return ''
+    # return render_template('show_all.html', students=Company.query.all())
