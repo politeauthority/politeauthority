@@ -1,7 +1,7 @@
 """Portfolio
 
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime, func
+from sqlalchemy import Column, Integer, String, DateTime, func
 
 from app import db
 
@@ -11,7 +11,9 @@ class Portfolio(db.Model):
     __tablename__ = 'portfolios'
 
     id = Column(Integer, primary_key=True)
-    user_id Column(Integer, nullable=False)
+    ts_created = Column(DateTime, default=func.current_timestamp())
+    ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
+    user_id = Column(Integer, nullable=False)
     name = Column(String(20), nullable=False)
 
     def __init__(self, id):

@@ -11,6 +11,8 @@ class PortfolioEvent(db.Model):
     __tablename__ = 'portfolio_events'
 
     id = Column(Integer, primary_key=True)
+    ts_created = Column(DateTime, default=func.current_timestamp())
+    ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
     portfolio_id = Column(Integer, nullable=False)
     company_id = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
@@ -18,8 +20,6 @@ class PortfolioEvent(db.Model):
     date = Column(DateTime, nullable=False)
     type = Column(String(10), nullable=False)
     date = Column(DateTime, nullable=False)
-    ts_created = Column(DateTime, default=func.current_timestamp())
-    ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
     def __init__(self, id):
         self.id = id
