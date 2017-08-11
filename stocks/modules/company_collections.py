@@ -25,7 +25,7 @@ def get_recently_modified(page=1):
 
 def get_watch_list(page=1):
     companies = ['VSLR', 'TWTR', 'MSFT', 'AAPL', 'TSLA', 'NFLX', 'FB', 'SNAP', 'FIT', 'AMD',
-                 'NVDA', 'MULE', 'SPYD']
+                 'NVDA', 'MULE', 'SPYD', 'ERIC', 'BAC']
     limit = 40
     qry = """
         SELECT `id`

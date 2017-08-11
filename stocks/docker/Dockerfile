@@ -17,7 +17,7 @@ RUN mkdir /tmp/politeauthority/ && \
 ENV PA_MYSQL_HOST="Host"
 ENV PA_MYSQL_USER="User"
 ENV PA_MYSQL_PASS="Pass"
-ENV PA_STOCKS_CONFIG=""
+ENV PA_STOCKS_CONFIG="/opt/pa/stocks/flask/configs/config_dev.py"
 ENV PA_BASE_LOGGING_DIR='/tmp/politeauthority/logs'
 
 VOLUME /opt/politeauthority/

@@ -57,6 +57,8 @@ def get_by_company_ids(company_ids, date_back=None):
             ret_keyed[date_key] = q.close
         else:
             ret_keyed[date_key] += q.close
+        import pdb
+        pdb.set_trace()
     for x, y in ret_keyed.iteritems():
         q = Quote()
         q.date = x
