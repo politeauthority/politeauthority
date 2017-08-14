@@ -32,3 +32,12 @@ class Company(db.Model):
 
     def __repr__(self):
         return '<Company %r, %r>' % (self.symbol, self.name)
+
+
+# class CompanyMeta(db.Model):
+
+#     __tablename__ = 'companies_meta'
+
+#     id = Column(Integer, primary_key=True)
+#     ts_created = Column(DateTime, default=func.current_timestamp())
+#     ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
