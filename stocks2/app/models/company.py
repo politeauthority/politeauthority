@@ -27,12 +27,16 @@ class Company(db.Model):
     low_52_weeks_date = Column(DateTime, nullable=True)
     run_company = Column(Integer, nullable=True)
 
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, _id=None):
+        if _id:
+            self.id = _id
 
     def __repr__(self):
         return '<Company %r, %r>' % (self.symbol, self.name)
 
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
 
 # class CompanyMeta(db.Model):
 
@@ -41,3 +45,5 @@ class Company(db.Model):
 #     id = Column(Integer, primary_key=True)
 #     ts_created = Column(DateTime, default=func.current_timestamp())
 #     ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
+
+# End File: stocks/app/models/company.py
