@@ -11,8 +11,8 @@ from docopt import docopt
 import sys
 
 sys.path.append("../..")
-import app
 from app.models.company import Company
+
 
 if __name__ == "__main__":
     args = docopt(__doc__)
@@ -21,6 +21,8 @@ if __name__ == "__main__":
     c = Company()
     c.symbol = 'TEST'
     c.name = 'Test Company'
+    c.price = 50.08
+    c.save()
 
     print c
 

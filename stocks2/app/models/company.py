@@ -33,3 +33,7 @@ class Company(db.Model):
 
     def __repr__(self):
         return '<Company %r, %r>' % (self.symbol, self.name)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
