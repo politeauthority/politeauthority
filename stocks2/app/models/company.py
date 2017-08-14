@@ -27,8 +27,9 @@ class Company(db.Model):
     low_52_weeks_date = Column(DateTime, nullable=True)
     run_company = Column(Integer, nullable=True)
 
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, _id=None):
+        if _id:
+            self.id = _id
 
     def __repr__(self):
         return '<Company %r, %r>' % (self.symbol, self.name)
