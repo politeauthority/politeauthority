@@ -1,20 +1,18 @@
 """App
 
 """
+import os
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from politeauthority import environmental
+
 
 app = Flask(__name__)
-mysql_conf = environmental.mysql_conf()
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://%s:%s@%s:%s/%s' % (
-    mysql_conf['user'],
-    mysql_conf['pass'],
-    mysql_conf['host'],
-    3306,
-    'stocks2')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+if os.environ.get('PA_BULD') == 'live':
+    app.config.from_pyfile('config/live.py')
+else:
+    app.config.from_pyfile('config/dev.py')
 
 db = SQLAlchemy(app)
 
