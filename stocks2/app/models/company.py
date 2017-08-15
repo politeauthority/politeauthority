@@ -1,7 +1,7 @@
 """Company
 
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime, func
+from sqlalchemy import Column, Integer, String, Float, DateTime, UniqueConstraint, func
 
 from app import db
 
@@ -27,6 +27,10 @@ class Company(db.Model):
     low_52_weeks_date = Column(DateTime, nullable=True)
     run_company = Column(Integer, nullable=True)
 
+    __table_args__ = (
+        UniqueConstraint('symbol', 'exchange', name='uix_1'),
+    )
+
     def __init__(self, _id=None):
         if _id:
             self.id = _id
@@ -35,7 +39,8 @@ class Company(db.Model):
         return '<Company %r, %r>' % (self.symbol, self.name)
 
     def save(self):
-        db.session.add(self)
+        if not self.id:
+            db.session.add(self)
         db.session.commit()
 
 # class CompanyMeta(db.Model):

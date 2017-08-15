@@ -9,5 +9,6 @@ SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' % (
     'stocks2')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 DEBUG = False
+TESTING = False
 THREADS_PER_PAGE = 2
-DOWNLOAD_PATH = '/tmp/politeauthority/download'
+PA_APP_DATA_PATH = '/data/'

@@ -1,3 +1,4 @@
+import os
 from politeauthority import environmental
 
 mysql_conf = environmental.mysql_conf()
@@ -9,6 +10,7 @@ SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' % (
     'stocks2')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 DEBUG = True
+TESTING = True
 THREADS_PER_PAGE = 2
-DOWNLOAD_PATH = '/tmp/politeauthority/download'
+APP_DATA_PATH = os.environ.get('PA_APP_DATA_PATH', '/home/alix/pas_data/')
 

@@ -17,9 +17,10 @@ SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' % (
     'stocks2')
 
 engine = create_engine(SQLALCHEMY_DATABASE_URI, convert_unicode=True)
-db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+db_session = scoped_session(sessionmaker(autocommit=True, autoflush=False, bind=engine))
 Base = declarative_base()
 Base.query = db_session.query_property()
+Base.metadata.create_all(bind=engine)
 
 
 def init_db():

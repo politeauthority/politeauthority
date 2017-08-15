@@ -6,7 +6,7 @@ RUN apt-get install -y --no-install-recommends \
     python \
     python-mysqldb
 
-RUN mkdir /tmp/politeauthority/ && \
+RUN mkdir /data/ && \
     cd /opt/ && \
     git clone https://github.com/politeauthority/politeauthority.git && \
     cd politeauthority && \
@@ -17,13 +17,13 @@ RUN mkdir /tmp/politeauthority/ && \
 ENV PA_MYSQL_HOST="Host"
 ENV PA_MYSQL_USER="User"
 ENV PA_MYSQL_PASS="Pass"
-ENV PA_BASE_LOGGING_DIR='/tmp/politeauthority/logs'
+ENV PA_BASE_LOGGING_DIR='/data/logs'
 ENV PA_BULD="dev"
+ENV PA_APP_DATA_PATH="/data/"
 ENV TZ=America/Denver
 
 VOLUME /opt/politeauthority/
-VOLUME /tmp/politeauthority/
-VOLUME /var/log/politeauthority
+VOLUME /data/
 
 EXPOSE 5000
 CMD python /opt/politeauthority/stocks2/run.py
