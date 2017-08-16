@@ -18,8 +18,10 @@ def index():
 
 @home.route('company/<symbol>')
 def company(symbol=None):
+    company = Company.query.filter(
+        Company.symbol == symbol).one()
     d = {}
-    d['companies'] = Company.query.all()
+    d['company'] = company
     return render_template('home/company.html', **d)
 
 
