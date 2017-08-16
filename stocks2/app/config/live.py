@@ -11,4 +11,10 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 DEBUG = False
 TESTING = False
 THREADS_PER_PAGE = 2
+# Use a secure, unique and absolutely secret key for
+# signing the data.
+CSRF_SESSION_KEY = "secret"
+
+# Secret key for signing cookies
+SECRET_KEY = "secret"
 PA_APP_DATA_PATH = '/data/'
