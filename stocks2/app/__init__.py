@@ -9,6 +9,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 
+from politeauthority import misc_time
+from politeauthority import common
+from helpers import jinja_filters
 
 app = Flask(__name__)
 
@@ -41,7 +44,15 @@ def register_logging(app):
     file_handler.setFormatter(formatter)
     app.logger.addHandler(file_handler)
 
+
+def register_jinja_funcs(app):
+    app.jinja_env.filters['time_ago'] = misc_time.ago
+    app.jinja_env.filters['fmt_date'] = misc_time.fmt_date
+    app.jinja_env.filters['fmt_currency'] = jinja_filters.format_currency
+    app.jinja_env.filters['percentage'] = common.get_percentage
+
 DebugToolbarExtension(app)
 register_logging(app)
+register_jinja_funcs(app)
 app.register_blueprint(ctrl_home)
 app.logger.info('Started App!')

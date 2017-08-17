@@ -84,7 +84,7 @@ def process_nasdaq_public_data_market(phile, market):
         c = Company()
         c.symbol = vals['symbol']
         c.name = vals['name']
-        if vals['last_sale'] != "n\a'":
+        if vals['last_sale'] != "n/a":
             c.price = vals['last_sale']
         else:
             c.price = 0

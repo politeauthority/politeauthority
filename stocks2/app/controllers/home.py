@@ -27,8 +27,10 @@ def company(symbol=None):
 
 @home.route('companies')
 def companies():
+    c_query = Company.query.order_by(Company.ts_updated)
     d = {}
-    d['companies'] = Company.query.all()
+    d['companies'] = Company.query.order_by(Company.ts_updated).all()
+    d['total_companies'] = c_query.count()
     return render_template('home/companies.html', **d)
 
 # End File: app/controllers/home.py
