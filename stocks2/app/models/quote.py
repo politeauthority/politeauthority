@@ -23,7 +23,7 @@ class Quote(db.Model):
 
     def __init__(self, _id=None):
         if _id:
-        self.id = _id
+            self.id = _id
 
     def __repr__(self):
         return '<Quote %r, %r>' % (self.id, self.name)
