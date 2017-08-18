@@ -19,7 +19,7 @@ ENV PA_MYSQL_HOST="Host"
 ENV PA_MYSQL_USER="User"
 ENV PA_MYSQL_PASS="Pass"
 ENV PA_BASE_LOGGING_DIR='/data/logs'
-ENV PA_BULD="dev"
+ENV PA_BUILD="dev"
 ENV PA_APP_DATA_PATH="/data/"
 ENV TZ=America/Denver
 
@@ -27,4 +27,4 @@ VOLUME /opt/politeauthority/
 VOLUME /data/
 
 EXPOSE 5000
-CMD gunicorn -w 4 -b 127.0.0.1:5000 app:app
+CMD run.sh
