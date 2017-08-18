@@ -1,8 +1,8 @@
 """Company
 
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime, UniqueConstraint, relationship, func
-
+from sqlalchemy import Column, Integer, String, Float, DateTime, UniqueConstraint, func
+from sqlalchemy.orm import relationship
 from app import db
 
 
