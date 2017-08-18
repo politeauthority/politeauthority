@@ -13,23 +13,25 @@ import os
 import requests
 from datetime import datetime
 import csv
+import time
 
 from politeauthority import common
 
 sys.path.append("../..")
 from app import app
 from app.models.company import Company
+from app.models.quote import Quote
 
 download_path = app.config.get('APP_DATA_PATH', '/data/politeauthority/')
 
 
-def build_nasdaq_data():
-    philes = download_nasdaq_public_data()
-    process_nasdaq_public_data_market(philes['nasdaq'], 'nasdaq')
-    process_nasdaq_public_data_market(philes['nyse'], 'nyse')
+def get_company_data_from_nasdaq():
+    philes = __download_nasdaq_public_data()
+    __process_nasdaq_public_data_market(philes['nasdaq'], 'nasdaq')
+    __process_nasdaq_public_data_market(philes['nyse'], 'nyse')
 
 
-def download_nasdaq_public_data():
+def __download_nasdaq_public_data():
     """
     Grabs base company data to kick off the database. This should only need to be run once really.
 
@@ -58,7 +60,7 @@ def download_nasdaq_public_data():
     return downloaded_files
 
 
-def process_nasdaq_public_data_market(phile, market):
+def __process_nasdaq_public_data_market(phile, market):
     f = open(phile, 'rb')
     reader = csv.reader(f)
     count = 0
@@ -97,8 +99,69 @@ def process_nasdaq_public_data_market(phile, market):
         c.save()
         app.logger.info('Saved: %s' % c.name)
 
+
+def get_quotes_from_google():
+    base_url = "https://www.google.com/finance/historical?output=csv&q=%s"
+
+    if not os.path.exists(download_path):
+        os.makedirs(download_path)
+    companies = Company.query.filter(Company.symbol == 'TSLA').all()
+    print companies
+    companies_to_run = len(companies)
+    count = 0
+    for company in companies:
+        count += 1
+        app.logger.info("<%s> %s" % (company.symbol, company.name))
+        app.logger.info("\tWorking %s/%s" % (count, companies_to_run))
+        r = requests.get(base_url % company.symbol)
+        if r.status_code != 200:
+            app.logger.error('Bad Response: %s' % r.status_code)
+
+        csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
+        year_file = csv_file
+        app.logger.info('Downloading %s' % csv_file)
+        with open(year_file, 'wb') as code:
+            code.write(r.content)
+        f = open(year_file, 'rb')
+        reader = csv.reader(f)
+        c = 0
+        app.logger.info('Saving Quotes')
+        for row in reader:
+            c += 1
+            if c == 1:
+                continue
+            raw_date = datetime.strptime(row[0], '%d-%b-%y')
+            raw_open = row[1]
+            raw_high = row[2]
+            raw_low = row[3]
+            raw_close = row[4]
+            if len(row) > 5:
+                raw_volume = row[5]
+            else:
+                raw_volume = None
+            q = Quote()
+            q.company_id = company.id
+            q.date = raw_date
+            if raw_open not in ['-']:
+                q.open = raw_open
+            if raw_high not in ['-']:
+                q.high = raw_high
+            if raw_low not in ['-']:
+                q.low = raw_low
+            q.close = raw_close
+            q.volume = raw_volume
+            q.save()
+        company.save()
+        time.sleep(2)
+
+
+def test():
+    print Company.query.order_by(Company.ts_updated).limit(2).all()
+
 if __name__ == "__main__":
     args = docopt(__doc__)
-    build_nasdaq_data()
+    # get_company_data_from_nasdaq()
+    # test()
+    get_quotes_from_google()
 
 # End File:

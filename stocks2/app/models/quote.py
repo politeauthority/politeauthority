@@ -21,8 +21,16 @@ class Quote(db.Model):
     volume = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
 
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, _id=None):
+        if _id:
+        self.id = _id
 
     def __repr__(self):
         return '<Quote %r, %r>' % (self.id, self.name)
+
+    def save(self):
+        if not self.id:
+            db.session.add(self)
+        db.session.commit()
+
+# End File: stocks/app/models/company.py
