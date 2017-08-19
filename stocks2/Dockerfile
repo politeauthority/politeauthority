@@ -12,8 +12,7 @@ RUN mkdir /data/ && \
     cd politeauthority && \
     python setup.py build && \
     python setup.py install && \
-    pip install -r stocks2/requirements.txt && \
-    cd /opt/politeauthority/stocks2
+    pip install -r stocks2/requirements.txt
 
 ENV PA_MYSQL_HOST="Host"
 ENV PA_MYSQL_USER="User"
@@ -27,4 +26,4 @@ VOLUME /opt/politeauthority/
 VOLUME /data/
 
 EXPOSE 5000
-CMD run.sh
+CMD /opt/politeauthority/stocks2/run.sh

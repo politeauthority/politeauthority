@@ -1,7 +1,8 @@
+#!/usr/bin/bash
 if [[ -z "${PA_BUILD}" ]]; then
   RUN_ENV="DEV"
 else
-  RUN_ENV="${DEPLOY_ENV}"
+  RUN_ENV="${PA_BUILD}"
 fi
 
 if [ RUN_ENV="DEV" ]; then
