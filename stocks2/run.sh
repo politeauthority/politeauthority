@@ -1,4 +1,3 @@
-#!/usr/bin/bash
 if [[ -z "${PA_BUILD}" ]]; then
   RUN_ENV="DEV"
 else
