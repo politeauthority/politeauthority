@@ -1,7 +1,7 @@
 """Quote
 
 """
-from sqlalchemy import Column, Integer, Float, DateTime, func
+from sqlalchemy import Column, Integer, Float, DateTime, func, UniqueConstraint
 
 from app import db
 
@@ -20,6 +20,10 @@ class Quote(db.Model):
     low = Column(Float, nullable=False)
     volume = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('company_id', 'date', name='uix_1'),
+    )
 
     def __init__(self, _id=None):
         if _id:
