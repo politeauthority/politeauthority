@@ -30,10 +30,15 @@ class Quote(db.Model):
             self.id = _id
 
     def __repr__(self):
-        return '<Quote %r, %r>' % (self.id, self.name)
+        return '<Quote %r, %r>' % (self.id, self.company_id)
 
     def save(self):
+        exists = None
         if not self.id:
+            exists = self.query.filter(
+                Quote.company_id == self.company_id,
+                Quote.date == self.date).one_or_none()
+        if not self.id and not exists:
             db.session.add(self)
         db.session.commit()
 

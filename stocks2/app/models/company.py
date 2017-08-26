@@ -3,7 +3,7 @@
 """
 from sqlalchemy import Column, Integer, String, Float, DateTime, UniqueConstraint
 from sqlalchemy import PickleType, func
-from sqlalchemy.orm import relationship
+# from sqlalchemy.orm import relationship
 from app import db
 
 

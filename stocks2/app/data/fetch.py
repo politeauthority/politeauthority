@@ -4,6 +4,7 @@ Usage:
     fetch.py [options]
 
 Options:
+    --test
     --debug             Run the debugger.
 
 """
@@ -14,6 +15,7 @@ import requests
 from datetime import datetime
 import csv
 import time
+# from sqlalchemy.exc import importIntegrityError
 
 from politeauthority import common
 
@@ -105,8 +107,8 @@ def get_quotes_from_google():
 
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    companies = Company.query.filter(Company.symbol == 'TSLA').all()
-    print companies
+    symbols = ['AAPL', 'TSLA', 'ERIC']
+    companies = Company.query.filter(Company.symbol.in_(symbols)).all()
     companies_to_run = len(companies)
     count = 0
     for company in companies:
@@ -118,25 +120,23 @@ def get_quotes_from_google():
             app.logger.error('Bad Response: %s' % r.status_code)
 
         csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
-        year_file = csv_file
         app.logger.info('Downloading %s' % csv_file)
-        with open(year_file, 'wb') as code:
-            code.write(r.content)
-        f = open(year_file, 'rb')
-        reader = csv.reader(f)
+        reader = list(csv.DictReader(open(csv_file)))
         c = 0
         app.logger.info('Saving Quotes')
+        total_rows = len(reader) - 1
         for row in reader:
             c += 1
             if c == 1:
                 continue
-            raw_date = datetime.strptime(row[0], '%d-%b-%y')
-            raw_open = row[1]
-            raw_high = row[2]
-            raw_low = row[3]
-            raw_close = row[4]
+            print row
+            raw_date = datetime.strptime(row['\xef\xbb\xbfDate'], '%d-%b-%y')
+            raw_open = row['Open']
+            raw_high = row['High']
+            raw_low = row['Low']
+            raw_close = row['Close']
             if len(row) > 5:
-                raw_volume = row[5]
+                raw_volume = row['Volume']
             else:
                 raw_volume = None
             q = Quote()
@@ -151,17 +151,27 @@ def get_quotes_from_google():
             q.close = raw_close
             q.volume = raw_volume
             q.save()
+            # try:
+            #     q.save()
+            # except Exception:
+            #     print 'Record already exitst'
+            if (c / 2) % 2:
+                app.logger.info('%s\tProcessed: %s/%s' % (company, c, total_rows))
         company.save()
         time.sleep(2)
 
 
 def test():
-    print Company.query.order_by(Company.ts_updated).limit(2).all()
+    print 'hi'
+    print Company.query.filter(Company.symbol == 'AAPL').all()
 
 if __name__ == "__main__":
     args = docopt(__doc__)
     # get_company_data_from_nasdaq()
-    # test()
+    if args['--test']:
+        print test
+        test()
+        exit()
     get_quotes_from_google()
 
 # End File:
