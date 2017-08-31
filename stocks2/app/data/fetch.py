@@ -25,6 +25,7 @@ from app.models.company import Company
 from app.models.quote import Quote
 
 download_path = app.config.get('APP_DATA_PATH', '/data/politeauthority/')
+download_path = os.path.join(download_path, 'tmp')
 
 
 def get_company_data_from_nasdaq():
@@ -118,9 +119,12 @@ def get_quotes_from_google():
         r = requests.get(base_url % company.symbol)
         if r.status_code != 200:
             app.logger.error('Bad Response: %s' % r.status_code)
-
+            continue
         csv_file = os.path.join(download_path, "%s.csv" % company.symbol)
         app.logger.info('Downloading %s' % csv_file)
+        with open(csv_file, 'wb') as f:
+            f.write(r.content)
+
         reader = list(csv.DictReader(open(csv_file)))
         c = 0
         app.logger.info('Saving Quotes')
@@ -155,7 +159,7 @@ def get_quotes_from_google():
             #     q.save()
             # except Exception:
             #     print 'Record already exitst'
-            if (c / 2) % 2:
+            if c % 2:
                 app.logger.info('%s\tProcessed: %s/%s' % (company, c, total_rows))
         company.save()
         time.sleep(2)
