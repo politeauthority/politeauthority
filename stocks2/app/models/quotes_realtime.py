@@ -1,4 +1,4 @@
-"""Quote
+"""QuoteRealtime
 
 """
 from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, func, UniqueConstraint
@@ -6,9 +6,9 @@ from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, func, Uniqu
 from app import db
 
 
-class Quote(db.Model):
+class QuoteRealtime(db.Model):
 
-    __tablename__ = 'quotes'
+    __tablename__ = 'quotes_realtime'
 
     id = Column(Integer, primary_key=True)
     ts_created = Column(DateTime, default=func.current_timestamp())
@@ -30,14 +30,14 @@ class Quote(db.Model):
             self.id = _id
 
     def __repr__(self):
-        return '<Quote %r, %r>' % (self.id, self.company_id)
+        return '<QuoteRealtime %r, %r>' % (self.id, self.company_id)
 
     def save(self):
         exists = None
         if not self.id:
             exists = self.query.filter(
-                Quote.company_id == self.company_id,
-                Quote.date == self.date).one_or_none()
+                QuoteRealtime.company_id == self.company_id,
+                QuoteRealtime.date == self.date).one_or_none()
         if not self.id and not exists:
             db.session.add(self)
         db.session.commit()

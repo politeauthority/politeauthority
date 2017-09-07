@@ -21,7 +21,7 @@ else:
     app.config.from_pyfile('config/dev.py')
 
 db = SQLAlchemy(app)
-from app.models.company import Company
+from app.models.company import Company, CompanyMeta
 from app.models.portfolio import Portfolio
 from app.models.portfolio_event import PortfolioEvent
 from app.models.quote import Quote

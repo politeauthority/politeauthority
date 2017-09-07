@@ -23,9 +23,12 @@ sys.path.append("../..")
 from app import app
 from app.models.company import Company
 from app.models.quote import Quote
+from app.helpers import misc
 
 download_path = app.config.get('APP_DATA_PATH', '/data/politeauthority/')
 download_path = os.path.join(download_path, 'tmp')
+
+symbols = ['AAPL', 'TSLA', 'ERIC', 'BAC']
 
 
 def get_company_data_from_nasdaq():
@@ -98,17 +101,19 @@ def __process_nasdaq_public_data_market(phile, market):
         c.sector = vals['sector']
         c.industry = vals['industry']
         c.exchange = vals['exchange']
-        print c.price
         c.save()
         app.logger.info('Saved: %s' % c.name)
 
 
 def get_quotes_from_google():
+    """
+    Google provides a 365 day csv of stock prices publicly. This is how we do it.
+
+    """
     base_url = "https://www.google.com/finance/historical?output=csv&q=%s"
 
     if not os.path.exists(download_path):
         os.makedirs(download_path)
-    symbols = ['AAPL', 'TSLA', 'ERIC']
     companies = Company.query.filter(Company.symbol.in_(symbols)).all()
     companies_to_run = len(companies)
     count = 0
@@ -133,7 +138,6 @@ def get_quotes_from_google():
             c += 1
             if c == 1:
                 continue
-            print row
             raw_date = datetime.strptime(row['\xef\xbb\xbfDate'], '%d-%b-%y')
             raw_open = row['Open']
             raw_high = row['High']
@@ -155,27 +159,31 @@ def get_quotes_from_google():
             q.close = raw_close
             q.volume = raw_volume
             q.save()
-            # try:
-            #     q.save()
-            # except Exception:
-            #     print 'Record already exitst'
-            if c % 2:
+            if c % 50:
                 app.logger.info('%s\tProcessed: %s/%s' % (company, c, total_rows))
         company.save()
         time.sleep(2)
 
 
+def get_realtime_quotes():
+    if misc.markets_open:
+        print 'BUY BUY BUY'
+    else:
+        print 'Markets are closed'
+
+
 def test():
     print 'hi'
-    print Company.query.filter(Company.symbol == 'AAPL').all()
+    print Company.query.filter().all()
 
 if __name__ == "__main__":
     args = docopt(__doc__)
     # get_company_data_from_nasdaq()
-    if args['--test']:
-        print test
-        test()
-        exit()
+    # if args['--test']:
+    #     print test
+    #     test()
+    # get_quotes_from_google()
+    # get_realtime_quotes()
     get_quotes_from_google()
 
 # End File:

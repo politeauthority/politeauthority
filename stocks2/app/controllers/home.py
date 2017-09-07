@@ -1,12 +1,12 @@
-"""
-    Home - CONTROLLER
+"""Home - CONTROLLER
 from flask import Blueprint, request, render_template, flash, g, session, redirect
 
 """
 
 from flask import Blueprint, render_template
-
+from sqlalchemy.orm.exc import NoResultFound
 from app.models.company import Company
+from app.models.quote import Quote
 
 home = Blueprint('Home', __name__, url_prefix='/')
 
@@ -18,11 +18,19 @@ def index():
 
 @home.route('company/<symbol>')
 def company(symbol=None):
-    company = Company.query.filter(
-        Company.symbol == symbol).one()
     d = {}
-    d['company'] = company
-    return render_template('home/company.html', **d)
+    try:
+        company = Company.query.filter(Company.symbol == symbol).one()
+        quotes = Quote.query.filter(Quote.company_id == company.id).all()
+        d['company'] = company
+        d['quotes'] = quotes
+        return render_template('home/company.html', **d)
+    except NoResultFound:
+        company_404()
+
+
+def company_404():
+    return render_template('home/company_404.html')
 
 
 @home.route('companies')

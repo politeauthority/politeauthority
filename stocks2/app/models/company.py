@@ -2,8 +2,8 @@
 
 """
 from sqlalchemy import Column, Integer, String, Float, DateTime, UniqueConstraint
-from sqlalchemy import PickleType, func
-# from sqlalchemy.orm import relationship
+from sqlalchemy import PickleType, Text, ForeignKey, func
+from sqlalchemy.orm import relationship
 from app import db
 
 
@@ -27,7 +27,7 @@ class Company(db.Model):
     low_52_weeks = Column(Float, nullable=True)
     low_52_weeks_date = Column(DateTime, nullable=True)
     run_company = Column(Integer, nullable=True)
-    # meta = relationship('CompanyMeta', back_populates="company")
+    meta = relationship('CompanyMeta', back_populates="company")
 
     __table_args__ = (
         UniqueConstraint('symbol', 'exchange', name='uix_1'),
@@ -46,19 +46,22 @@ class Company(db.Model):
         db.session.commit()
 
 
-# class CompanyMeta(db.Model):
+class CompanyMeta(db.Model):
 
-#     __tablename__ = 'companies_meta'
+    __tablename__ = 'companies_meta'
 
-#     id = Column(Integer, primary_key=True)
-#     ts_created = Column(DateTime, default=func.current_timestamp())
-#     ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
-#     company_id = Column(Integer)
-#     key = Column(String(256))
-#     value = Column(String())
-#     company = relationship("Company", back_populates="meta")
+    id = Column(Integer, primary_key=True)
+    ts_created = Column(DateTime, default=func.current_timestamp())
+    ts_updated = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    key = Column(String(256))
+    val_type = Column(String(256))
+    val_string = Column(Text())
+    val_pickle = Column(PickleType())
+    val_date = Column(DateTime)
+    company = relationship("Company", back_populates="meta")
 
-#     def __repr__(self):
-#         return '<CompanyMeta %s, %s>' % (self.id, self.value)
+    def __repr__(self):
+        return '<CompanyMeta %s, %s>' % (self.id, self.value)
 
 # End File: stocks/app/models/company.py
