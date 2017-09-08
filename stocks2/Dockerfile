@@ -26,5 +26,5 @@ ENV TZ=America/Denver
 VOLUME /opt/politeauthority/
 VOLUME /data/
 
-EXPOSE 5000
+EXPOSE 80
 
