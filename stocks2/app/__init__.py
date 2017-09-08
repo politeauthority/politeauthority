@@ -15,7 +15,7 @@ from helpers import jinja_filters
 
 app = Flask(__name__)
 
-if os.environ.get('PA_BULD') == 'live':
+if os.environ.get('PA_BULD') == 'LIVE':
     app.config.from_pyfile('config/live.py')
 else:
     app.config.from_pyfile('config/dev.py')

@@ -9,6 +9,6 @@ if [ RUN_ENV="DEV" ]; then
 	python run.py
 else
 	echo 'Running with Gunicorn'
-	gunicorn -w 4 -b -D 127.0.0.1:5000 app:app
+	gunicorn -w 4 -b 127.0.0.1:80 app:app
 fi
 echo 'Stopped'
