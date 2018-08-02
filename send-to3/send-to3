@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""send-to3
+
+Usage:
+  send-to3 <local_files> <remote_location> [options]
+  send-to3 (-h | --help)
+
+Options:
+    -d --debug                      Enable debug
+    -p --public                     Make files accessable publicly
+    -c --compress                   Minimize CSS
+
+"""
+from datetime import datetime
+import mimetypes
+import os
+
+from docopt import docopt
+import boto3
+
+
+class SendTo3(object):
+
+    def __init__(self, args):
+        self.args = args
+        self.check_envs()
+
+    def check_envs(self):
+        if not os.environ.get('aws_access_key_id'):
+            print('ERROR: No env: aws_access_key_id')
+            exit(1)
+        self.aws_access_key_id = os.environ.get('aws_access_key_id')
+
+        if not os.environ.get('aws_secret_access_key'):
+            print('ERROR: No env: aws_secret_access_key')
+            exit(1)
+        self.aws_secret_access_key = os.environ.get('aws_secret_access_key')
+
+        self.aws_endpoint_url = "https://nyc3.digitaloceanspaces.com"
+        self.aws_region_name = "nyc3"
+        self.aws_bucket_url = self._set_aws_bucket_url()
+        self.aws_bucket_name = "vol-1"
+
+    def run(self):
+        self.start_time = datetime.now()
+        self.master_file_list = self.get_master_file_list()
+
+        self.connect_to_s3()
+        self.upload_files()
+        self.end_time = datetime.now()
+
+    def get_master_file_list(self):
+        local_path = self._remove_trailing_slash(self.args['<local_files>'])
+
+        if not os.path.exists(local_path):
+            print('ERROR: File or Directory does not exist: %s' % self.args['<local_files>'])
+            exit(1)
+
+        base = ''
+        if self.args['<remote_location>']:
+            base = "%s/" % self.args['<remote_location>']
+
+        file_list = []
+
+        if not os.path.isdir(local_path):
+            remote_path = "%s%s" % (base, local_path)
+            file_list.append({'local': local_path, 'remote': remote_path})
+            return file_list
+
+        root_to_upload = self._get_root_upload()
+        for root, dirs, files in os.walk(self.args['<local_files>'], topdown=False):
+            for f in files:
+                if self._ignore_file(root, f):
+                    continue
+                full_local_path = "%s/%s" % (
+                    self._remove_trailing_slash(root),
+                    f)
+
+
+                remote_path = "%s%s/%s/%s" % (
+                    base,
+                    root_to_upload,
+                    self._remove_trailing_slash(root.replace(local_path, '')),
+                    self._remove_trailing_slash(f))
+                remote_path = self._remove_trailing_slash(remote_path)
+                # print("%s > %s" % (full_local_path, remote_path))
+                file_list.append({'local': full_local_path, 'remote': remote_path})
+
+        return file_list
+
+    def connect_to_s3(self):
+        # brand = sys.argv[1]
+        print("aws_region_name: %s" % self.aws_region_name)
+        print("aws_endpoint_url: %s" % self.aws_endpoint_url)
+        print("aws_access_key_id: %s" % self.aws_access_key_id)
+        print("aws_secret_access_key: %s" % self.aws_secret_access_key)
+        self.s3 = boto3.resource(
+            's3',
+            region_name=self.aws_region_name,
+            endpoint_url=self.aws_endpoint_url,
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key)
+
+    def upload_files(self):
+        print('Uploading %s files' % len(self.master_file_list))
+        all_success = True
+        for phile in self.master_file_list:
+            self.upload_file(phile)
+        if all_success:
+            print('All files uploaded!')
+
+    def upload_file(self, phile):
+        remote_url = self.aws_bucket_url + phile['remote']
+        print("Uploading: %s > %s" % (phile['local'], remote_url))
+        extra_args = self._extra_args(phile['local'])
+
+        # if self.args['--compress']:
+        #     ext = self._get_file_ext(phile['local'])
+        #     if ext == '.css':
+        #         file_obj = self.compress_css(phile['local'])
+        with open(phile['local'], 'rb') as data:
+            self.s3.meta.client.upload_fileobj(
+                data,
+                self.aws_bucket_name,
+                phile['remote'],
+                ExtraArgs=extra_args)
+
+    def _ignore_file(self, root, phile):
+        inspects = [root, phile]
+        for inspect in inspects:
+            if inspect[0] == '.' or '/.' in inspect:
+                return True
+            if inspect[len(phile) - 4:] == '.pyc':
+                return True
+
+        return False
+
+    def _extra_args(self, local_phile):
+        extras = {}
+        extras['ContentType'] = self._get_content_type(local_phile)
+        if self.args['--public']:
+            extras['ACL'] = 'public-read'
+        return extras
+
+    def _get_content_type(self, local_phile):
+        content_type = mimetypes.guess_type(local_phile)[0]
+        if not content_type:
+            ext = self._get_file_ext(local_phile)
+            if ext in ['.eot']:
+                content_type = 'application/vnd.ms-fontobject'
+            elif ext in['.ttf']:
+                content_type = 'application/x-font-ttf'
+            elif ext in ['.woff']:
+                content_type = 'font/woff'
+            elif ext in ['.woff2']:
+                content_type = 'font/woff2'
+            elif ext in ['svg']:
+                content_type = 'image/svg+xml'
+            else:
+                content_type = 'text/plain'
+        return content_type
+
+    def _get_root_upload(self):
+        """
+        """
+        request_dir = self._remove_trailing_slash(self.args['<local_files>'])
+        request_dir = request_dir[request_dir.rfind('/') + 1:]
+        return self._remove_trailing_slash(request_dir)
+
+    def _remove_trailing_slash(self, phile_path):
+        """
+        """
+        ret = phile_path
+        if phile_path[len(phile_path) - 1] == '/':
+            ret = phile_path[:-1]
+        ret = ret.replace('//', '/')
+        return ret
+
+    def _get_file_ext(self, local_phile):
+        return local_phile[local_phile.rfind('.'):]
+
+    def _set_aws_bucket_url(self):
+        return "https://vol-1.nyc3.digitaloceanspaces.com/"
+
+    def compress_css(self, local_phile):
+        """
+        BETA DO NOT USE
+
+        """
+        phile = open(local_phile, 'r')
+        # print(phile.rea
+        import pdb; pdb.set_trace()
+
+
+if __name__ == '__main__':
+    args = docopt(__doc__)
+    SendTo3(args).run()
+
+# End file: send-to3
