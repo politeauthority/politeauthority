@@ -10,7 +10,7 @@ Werkzeug==0.12.2
 beautifulsoup4==4.6.0
 colorama==0.3.2
 docopt==0.6.2
-html5lib==0.999
+html5lib==0.999999999
 itsdangerous==0.24
 python-dateutil==2.6.1
 requests==2.4.3
