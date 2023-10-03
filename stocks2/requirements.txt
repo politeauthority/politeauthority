@@ -14,7 +14,7 @@ html5lib==0.999
 itsdangerous==0.24
 python-dateutil==2.6.1
 requests==2.4.3
-urllib3==1.9.1
+urllib3==1.26.17
 wikipedia==1.4.0
 yahoo-finance==1.4.0
 gunicorn==19.7.1
