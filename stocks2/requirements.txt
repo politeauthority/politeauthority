@@ -18,3 +18,4 @@ urllib3==1.9.1
 wikipedia==1.4.0
 yahoo-finance==1.4.0
 gunicorn==19.7.1
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
